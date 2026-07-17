@@ -1,9 +1,11 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
+  schemas  = ["vibeconnect"]
 }
 
 model conversations {
@@ -14,6 +16,8 @@ model conversations {
   direct_messages_mapping direct_messages_mapping[]
   messages                messages[]
   participants            participants[]
+
+  @@schema("vibeconnect")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -26,6 +30,7 @@ model direct_messages_mapping {
   users_direct_messages_mapping_user2_idTousers users          @relation("direct_messages_mapping_user2_idTousers", fields: [user2_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([user1_id, user2_id])
+  @@schema("vibeconnect")
 }
 
 model message_deletions {
@@ -35,6 +40,7 @@ model message_deletions {
   users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([message_id, user_id])
+  @@schema("vibeconnect")
 }
 
 model messages {
@@ -48,6 +54,8 @@ model messages {
   conversations        conversations?      @relation(fields: [conversation_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users                users?              @relation(fields: [sender_id], references: [id], onUpdate: NoAction)
   participants         participants[]
+
+  @@schema("vibeconnect")
 }
 
 model participants {
@@ -61,6 +69,7 @@ model participants {
   users                users         @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([conversation_id, user_id])
+  @@schema("vibeconnect")
 }
 
 model users {
@@ -75,4 +84,6 @@ model users {
   message_deletions                                               message_deletions[]
   messages                                                        messages[]
   participants                                                    participants[]
+
+  @@schema("vibeconnect")
 }
