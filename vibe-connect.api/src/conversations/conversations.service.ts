@@ -1,4 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { ParticipantRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateConversationDto } from './dtos/create_conversation.dto';
 
@@ -9,6 +14,12 @@ export class ConversationsService {
   async createConversation(userId: string, dto: CreateConversationDto) {
     return await this.prisma.$transaction(async (tx) => {
       const allParticipantIds = [userId, ...dto.participantIds];
+      if (new Set(allParticipantIds).size !== allParticipantIds.length) {
+        throw new BadRequestException(
+          'Bir kullanıcı konuşmaya yalnızca bir kez eklenebilir.',
+        );
+      }
+
       const existingUsers = await tx.users.findMany({
         where: {
           id: { in: allParticipantIds },
@@ -17,19 +28,24 @@ export class ConversationsService {
       });
 
       if (existingUsers.length !== allParticipantIds.length) {
-        throw new Error('Bir veya daha fazla kullanıcı bulunamadı.');
+        throw new NotFoundException(
+          'Bir veya daha fazla kullanıcı bulunamadı.',
+        );
       }
       const conversation = await tx.conversations.create({
         data: {
           name: dto.name,
-          is_group: dto.isGroup || false,
+          is_group: dto.isGroup ?? false,
         },
       });
       await tx.participants.createMany({
         data: allParticipantIds.map((pId) => ({
           conversation_id: conversation.id,
           user_id: pId,
-          role: dto.isGroup && pId === userId ? 'Admin' : 'Member',
+          role:
+            dto.isGroup && pId === userId
+              ? ParticipantRole.OWNER
+              : ParticipantRole.MEMBER,
         })),
       });
       return conversation;
@@ -54,7 +70,7 @@ export class ConversationsService {
         },
       },
       orderBy: {
-        conversations: { created_at: 'desc' },
+        conversations: { last_message_at: 'desc' },
       },
     });
 

@@ -8,15 +8,26 @@ datasource db {
   schemas  = ["vibeconnect"]
 }
 
+enum ParticipantRole {
+  MEMBER
+  ADMIN
+  OWNER
+
+  @@map("participant_role")
+  @@schema("vibeconnect")
+}
+
 model conversations {
   id                      String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                    String?                   @db.VarChar(100)
-  is_group                Boolean?                  @default(false)
-  created_at              DateTime?                 @default(now()) @db.Timestamptz(6)
-  direct_messages_mapping direct_messages_mapping[]
+  is_group                Boolean                   @default(false)
+  created_at              DateTime                  @default(now()) @db.Timestamptz(6)
+  last_message_at         DateTime                  @default(now()) @db.Timestamptz(6)
+  direct_messages_mapping direct_messages_mapping?
   messages                messages[]
   participants            participants[]
 
+  @@index([last_message_at(sort: Desc)])
   @@schema("vibeconnect")
 }
 
@@ -24,12 +35,13 @@ model conversations {
 model direct_messages_mapping {
   user1_id                                      String         @db.Uuid
   user2_id                                      String         @db.Uuid
-  conversation_id                               String?        @db.Uuid
-  conversations                                 conversations? @relation(fields: [conversation_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  conversation_id                               String         @unique @db.Uuid
+  conversations                                 conversations  @relation(fields: [conversation_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users_direct_messages_mapping_user1_idTousers users          @relation("direct_messages_mapping_user1_idTousers", fields: [user1_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users_direct_messages_mapping_user2_idTousers users          @relation("direct_messages_mapping_user2_idTousers", fields: [user2_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([user1_id, user2_id])
+  @@index([user2_id])
   @@schema("vibeconnect")
 }
 
@@ -40,35 +52,39 @@ model message_deletions {
   users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([message_id, user_id])
+  @@index([user_id])
   @@schema("vibeconnect")
 }
 
 model messages {
   id                   String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  conversation_id      String?             @db.Uuid
-  sender_id            String?             @db.Uuid
+  conversation_id      String              @db.Uuid
+  sender_id            String              @db.Uuid
   content              String
-  created_at           DateTime?           @default(now()) @db.Timestamptz(6)
-  deleted_for_everyone Boolean?            @default(false)
+  created_at           DateTime            @default(now()) @db.Timestamptz(6)
+  deleted_for_everyone Boolean             @default(false)
   message_deletions    message_deletions[]
-  conversations        conversations?      @relation(fields: [conversation_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users                users?              @relation(fields: [sender_id], references: [id], onUpdate: NoAction)
-  participants         participants[]
+  conversations        conversations       @relation(fields: [conversation_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                users               @relation(fields: [sender_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  participants         participants[]     @relation("LastReadMessage")
 
+  @@index([conversation_id, created_at(sort: Desc), id(sort: Desc)], map: "messages_conversation_created_at_id_idx")
+  @@index([sender_id])
   @@schema("vibeconnect")
 }
 
 model participants {
   conversation_id      String        @db.Uuid
   user_id              String        @db.Uuid
-  role                 String?       @default("Member") @db.VarChar(20)
+  role                 ParticipantRole @default(MEMBER)
   last_read_message_id String?       @db.Uuid
-  joined_at            DateTime?     @default(now()) @db.Timestamptz(6)
+  joined_at            DateTime      @default(now()) @db.Timestamptz(6)
   conversations        conversations @relation(fields: [conversation_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  messages             messages?     @relation(fields: [last_read_message_id], references: [id], onUpdate: NoAction)
+  messages             messages?     @relation("LastReadMessage", fields: [last_read_message_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
   users                users         @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([conversation_id, user_id])
+  @@index([user_id])
   @@schema("vibeconnect")
 }
 
@@ -77,7 +93,7 @@ model users {
   username                                                        String                    @unique @db.VarChar(50)
   email                                                           String                    @unique @db.Citext
   password_hash                                                   String                    @db.VarChar(255)
-  created_at                                                      DateTime?                 @default(now()) @db.Timestamptz(6)
+  created_at                                                      DateTime                  @default(now()) @db.Timestamptz(6)
   deleted_at                                                      DateTime?                 @db.Timestamptz(6)
   direct_messages_mapping_direct_messages_mapping_user1_idTousers direct_messages_mapping[] @relation("direct_messages_mapping_user1_idTousers")
   direct_messages_mapping_direct_messages_mapping_user2_idTousers direct_messages_mapping[] @relation("direct_messages_mapping_user2_idTousers")

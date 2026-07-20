@@ -1,7 +1,18 @@
-import { IsBoolean, IsOptional, IsString, IsArray } from 'class-validator';
+import {
+  ArrayMinSize,
+  ArrayUnique,
+  IsArray,
+  IsBoolean,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
+
 export class CreateConversationDto {
   @IsArray()
-  @IsString({ each: true })
+  @ArrayMinSize(1)
+  @ArrayUnique()
+  @IsUUID('4', { each: true })
   participantIds!: string[];
 
   @IsString()

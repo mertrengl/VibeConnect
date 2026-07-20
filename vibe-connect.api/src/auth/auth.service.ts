@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dtos/login.dto';
@@ -31,19 +32,27 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await this.prisma.users.create({
-      data: {
-        username,
-        email,
-        password_hash: hashedPassword,
-      },
-    });
+    try {
+      const newUser = await this.prisma.users.create({
+        data: {
+          username,
+          email,
+          password_hash: hashedPassword,
+        },
+      });
 
-    // Şifreyi ayır ve geri kalan bilgileri döndür. Normalde delete işlemi yapabilirdik ama ben bunu yapmadım çünkü kullanıcı bilgilerinde null kalamaz dedik db'de o yüzden ts yazmama izin vermiyor delete komutunu.
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password_hash, ...userWithoutPassword } = newUser;
-
-    return userWithoutPassword;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password_hash, ...userWithoutPassword } = newUser;
+      return userWithoutPassword;
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException('Kullanıcı adı veya email zaten mevcut.');
+      }
+      throw error;
+    }
   }
 
   async login(loginDto: LoginDto) {
