@@ -35,4 +35,50 @@ export class ConversationsService {
       return conversation;
     });
   }
+
+  async getUserConversations(userId: string) {
+    const userParticipants = await this.prisma.participants.findMany({
+      where: { user_id: userId },
+      include: {
+        conversations: {
+          include: {
+            participants: {
+              where: { user_id: { not: userId } },
+              include: {
+                users: {
+                  select: { id: true, username: true },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        conversations: { created_at: 'desc' },
+      },
+    });
+
+    return userParticipants.map((p) => {
+      const convo = p.conversations;
+      let displayName = convo.name;
+
+      if (!convo.is_group && !displayName) {
+        const otherParticipant = convo.participants[0];
+        if (otherParticipant && otherParticipant.users) {
+          displayName = otherParticipant.users.username;
+        }
+      }
+
+      return {
+        id: convo.id,
+        name: displayName,
+        isGroup: convo.is_group,
+        createdAt: convo.created_at,
+        otherUser:
+          !convo.is_group && convo.participants[0]
+            ? convo.participants[0].users
+            : null,
+      };
+    });
+  }
 }

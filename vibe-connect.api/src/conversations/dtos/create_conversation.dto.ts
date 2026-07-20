@@ -1,8 +1,4 @@
-import { Injectable } from '@nestjs/common';
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
-import { IsArray } from 'class-validator/types/decorator/typechecker/IsArray';
-
-@Injectable()
+import { IsBoolean, IsOptional, IsString, IsArray } from 'class-validator';
 export class CreateConversationDto {
   @IsArray()
   @IsString({ each: true })

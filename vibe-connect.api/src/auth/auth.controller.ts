@@ -27,7 +27,7 @@ export class AuthController {
   // İŞTE YENİ GİZLİ ROTAMIZ
   @UseGuards(JwtAuthGuard) // Kapıdaki güvenlik görevlisi
   @Get('profile')
-  getProfile(@Request() req: { user: { id: number; username: string } }) {
+  getProfile(@Request() req: { user: { id: string; username: string } }) {
     return {
       mesaj: 'Tebrikler, güvenlik duvarını aştın!',
       kullaniciBilgileri: req.user,
