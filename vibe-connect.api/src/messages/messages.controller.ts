@@ -8,12 +8,14 @@ import {
   Param,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { MessagesService } from './messages.service';
 import { CreateMessageDto } from './dtos/create_message.dto';
 import { UpdateMessageDto } from './dtos/update_message.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Request as ExpressRequest } from 'express';
+import { GetMessagesQueryDto } from './dtos/get_messages_query.dto';
 
 interface RequestWithUser extends ExpressRequest {
   user: {
@@ -37,11 +39,13 @@ export class MessagesController {
   @Get(':conversationId')
   async getConversationMessages(
     @Param('conversationId') conversationId: string,
+    @Query() dto: GetMessagesQueryDto,
     @Request() req: RequestWithUser,
   ) {
     return await this.messagesService.getConversationMessages(
       conversationId,
       req.user.id,
+      dto,
     );
   }
 

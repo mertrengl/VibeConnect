@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateMessageDto } from './dtos/create_message.dto';
 import { UpdateMessageDto } from './dtos/update_message.dto';
 import { ParticipantRole } from '@prisma/client';
+import { GetMessagesQueryDto } from './dtos/get_messages_query.dto';
 
 @Injectable()
 export class MessagesService {
@@ -32,7 +33,11 @@ export class MessagesService {
     return message;
   }
 
-  async getConversationMessages(conversationId: string, userId: string) {
+  async getConversationMessages(
+    conversationId: string,
+    userId: string,
+    dto: GetMessagesQueryDto,
+  ) {
     const isParticipant = await this.prisma.participants.findFirst({
       where: {
         conversation_id: conversationId,
@@ -46,6 +51,11 @@ export class MessagesService {
       where: {
         conversation_id: conversationId,
       },
+      ...(dto.cursor && {
+        cursor: { id: dto.cursor },
+        skip: 1,
+      }),
+      take: -(dto.limit ?? 20),
       orderBy: {
         created_at: 'asc',
       },
