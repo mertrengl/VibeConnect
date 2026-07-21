@@ -185,49 +185,34 @@
   position: relative;
   z-index: 1;
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 16px;
+  width: 100%;
   margin-bottom: 64px;
 }
 
 .heroPrimaryCta {
+  width: 100%;
   background: linear-gradient(135deg, #b0c6ff 0%, #558dff 100%);
   color: #001945;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
-  padding: 14px 28px;
-  border-radius: var(--radius-default);
+  padding: 18px 36px;
+  border-radius: var(--radius-md);
   border: none;
-  cursor: pointer;
-  box-shadow: 0 4px 20px rgba(41, 121, 255, 0.3);
-  transition: all 0.2s ease;
-}
-
-.heroPrimaryCta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(41, 121, 255, 0.45);
-}
-
-.heroSecondaryCta {
-  background: rgba(30, 30, 30, 0.6);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 500;
-  padding: 14px 28px;
-  border-radius: var(--radius-default);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 0 8px 30px rgba(41, 121, 255, 0.35);
+  transition: all 0.25 ease;
 }
 
-.heroSecondaryCta:hover {
-  background: rgba(40, 40, 40, 0.8);
-  border-color: rgba(41, 121, 255, 0.4);
-  color: var(--color-primary-fixed);
+.heroPrimaryCta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(41, 121, 255, 0.5);
+  background: linear-gradient(135deg, #c5d6ff 0%, #6ba0ff 100%);
 }
 
 /* Mockup Display Container */
