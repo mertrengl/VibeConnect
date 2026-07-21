@@ -19,6 +19,7 @@ import { JwtStrategy } from './strategies/jwt.strategies'; // Strateji dosyanı 
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy], // İŞTE EKSİK OLAN KISIM BURASI!
+  providers: [AuthService, JwtStrategy],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}
