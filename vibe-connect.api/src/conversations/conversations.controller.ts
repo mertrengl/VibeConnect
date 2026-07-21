@@ -5,10 +5,12 @@ import {
   Body,
   UseGuards,
   Get,
+  Query,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateConversationDto } from './dtos/create_conversation.dto';
 import { ConversationsService } from './conversations.service';
+import { SearchConversationsDto } from './dtos/search_conversations.dto';
 
 type AuthenticatedRequest = {
   user: {
@@ -38,5 +40,13 @@ export class ConversationsController {
   async getMyConversations(@Request() req: AuthenticatedRequest) {
     const userId = req.user.id;
     return await this.conversationService.getUserConversations(userId);
+  }
+
+  @Get('search')
+  async searchConversations(
+    @Request() req: AuthenticatedRequest,
+    @Query() dto: SearchConversationsDto,
+  ) {
+    return this.conversationService.searchConversations(req.user.id, dto.q);
   }
 }

@@ -97,4 +97,23 @@ export class ConversationsService {
       };
     });
   }
+  async searchConversations(userId: string, query: string) {
+    return await this.prisma.conversations.findMany({
+      where: {
+        is_group: true,
+        name: { contains: query, mode: 'insensitive' },
+        participants: {
+          some: { user_id: userId },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: {
+        last_message_at: 'desc',
+      },
+      take: 20,
+    });
+  }
 }
