@@ -1,0 +1,130 @@
+:root {
+  /* Obsidian Flux Color System */
+  --bg-surface: #131313;
+  --bg-surface-dim: #131313;
+  --bg-surface-bright: #393939;
+  --bg-surface-lowest: #0e0e0e;
+  --bg-surface-low: #1c1b1b;
+  --bg-surface-container: #201f1f;
+  --bg-surface-high: #2a2a2a;
+  --bg-surface-highest: #353534;
+  --bg-surface-elevated: #1e1e1e;
+  --bg-surface-popover: #252525;
+
+  --color-on-surface: #e5e2e1;
+  --color-on-surface-variant: #c2c6d7;
+  --color-inverse-surface: #e5e2e1;
+  --color-inverse-on-surface: #313030;
+
+  --color-outline: #8c90a0;
+  --color-outline-variant: #2c2c2c;
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+
+  --color-primary: #2979ff;
+  --color-primary-fixed: #b0c6ff;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #558dff;
+  --color-on-primary-container: #002661;
+  --color-primary-ghost: rgba(41, 121, 255, 0.1);
+
+  --color-secondary: #7c4dff;
+  --color-secondary-fixed: #cdbdff;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #5203d5;
+
+  --color-tertiary: #ffb692;
+  --color-on-tertiary: #562000;
+
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+
+  --color-status-online: #4caf50;
+  --color-status-offline: #757575;
+  --color-status-dnd: #f44336;
+
+  /* Typography */
+  --font-inter: var(--font-inter-sans), system-ui, -apple-system, sans-serif;
+  --font-geist: var(--font-geist-mono), monospace;
+
+  /* Border Radius */
+  --radius-sm: 0.25rem;
+  --radius-default: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --space-base: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --sidebar-rail-width: 72px;
+  --sidebar-nav-width: 280px;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  height: 100%;
+  max-width: 100vw;
+  overflow: hidden;
+  background-color: var(--bg-surface);
+  color: var(--color-on-surface);
+  font-family: var(--font-inter);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button, input, textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+/* Glassmorphic Header Utilities */
+.glass-header {
+  background: rgba(19, 19, 19, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
