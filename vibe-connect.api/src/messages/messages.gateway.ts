@@ -11,6 +11,12 @@ import { Server, Socket } from 'socket.io';
 import { MessagesService } from './messages.service';
 import { JwtService } from '@nestjs/jwt';
 
+type userPresence = 'ONLINE' | 'OFFLINE' | 'AWAY' | 'BUSY';
+
+interface PresenceStatus {
+  socketId: string;
+  status: userPresence;
+}
 interface JwtPayload {
   sub: string;
 }
@@ -41,6 +47,8 @@ export class MessagesGateway
   @WebSocketServer()
   server!: Server;
 
+  private activeUsers: Map<string, PresenceStatus> = new Map();
+
   constructor(
     private readonly messagesService: MessagesService,
     private readonly jwtService: JwtService,
@@ -61,6 +69,21 @@ export class MessagesGateway
       const payload = await this.jwtService.verifyAsync<JwtPayload>(token);
       client.data = { sub: payload.sub };
 
+      this.activeUsers.set(payload.sub, {
+        socketId: client.id,
+        status: 'ONLINE',
+      });
+
+      this.server.emit('userOnline', { userId: payload.sub, status: 'ONLINE' });
+
+      const onlineUsersList = Array.from(this.activeUsers.entries()).map(
+        ([id, val]) => ({
+          userId: id,
+          status: val.status,
+        }),
+      );
+      client.emit('onlineUsersList', onlineUsersList);
+
       console.log(
         `İstemci bağlandı: ${client.id}, Kullanıcı ID: ${client.data.sub}`,
       );
@@ -71,6 +94,13 @@ export class MessagesGateway
   }
 
   handleDisconnect(client: AuthenticatedSocket) {
+    const userId = client.data?.sub;
+
+    if (userId) {
+      this.activeUsers.delete(userId);
+      this.server.emit('userOffline', { userId });
+    }
+
     console.log(`İstemci bağlantısı kesildi: ${client.id}`);
   }
 
@@ -126,5 +156,22 @@ export class MessagesGateway
       client.data.sub,
     );
     this.server.to(payload.conversationId).emit('newMessage', message);
+  }
+  @SubscribeMessage('updateStatus')
+  handleUpdateStatus(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() payload: { status: userPresence },
+  ) {
+    const userId = client.data.sub;
+    const currentUserPresence = this.activeUsers.get(userId);
+
+    if (currentUserPresence) {
+      currentUserPresence.status = payload.status;
+      this.activeUsers.set(userId, currentUserPresence);
+      this.server.emit('userStatusUpdated', {
+        userId,
+        status: payload.status,
+      });
+    }
   }
 }

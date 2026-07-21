@@ -32,6 +32,46 @@ export class ConversationsService {
           'Bir veya daha fazla kullanıcı bulunamadı.',
         );
       }
+
+      if (!dto.isGroup) {
+        const [smallerId, largerId] = [userId, dto.participantIds[0]].sort();
+
+        const existingDM = await tx.direct_messages_mapping.findUnique({
+          where: {
+            user1_id_user2_id: {
+              user1_id: smallerId,
+              user2_id: largerId,
+            },
+          },
+          include: {
+            conversations: true,
+          },
+        });
+        if (existingDM) {
+          return existingDM.conversations;
+        }
+        const conversation = await tx.conversations.create({
+          data: {
+            is_group: false,
+            name: null,
+          },
+        });
+        await tx.direct_messages_mapping.create({
+          data: {
+            user1_id: smallerId,
+            user2_id: largerId,
+            conversation_id: conversation.id,
+          },
+        });
+        await tx.participants.createMany({
+          data: allParticipantIds.map((pId) => ({
+            conversation_id: conversation.id,
+            user_id: pId,
+            role: ParticipantRole.MEMBER,
+          })),
+        });
+        return conversation;
+      }
       const conversation = await tx.conversations.create({
         data: {
           name: dto.name,
