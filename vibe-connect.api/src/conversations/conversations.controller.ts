@@ -6,11 +6,14 @@ import {
   UseGuards,
   Get,
   Query,
+  Patch,
+  Param,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateConversationDto } from './dtos/create_conversation.dto';
 import { ConversationsService } from './conversations.service';
 import { SearchConversationsDto } from './dtos/search_conversations.dto';
+import { MarkAsReadDto } from './dtos/mark_as_read.dot';
 
 type AuthenticatedRequest = {
   user: {
@@ -48,5 +51,18 @@ export class ConversationsController {
     @Query() dto: SearchConversationsDto,
   ) {
     return this.conversationService.searchConversations(req.user.id, dto.q);
+  }
+
+  @Patch(':id/read')
+  async markAsRead(
+    @Param('id') conversationId: string,
+    @Body() dto: MarkAsReadDto,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.conversationService.markAsRead(
+      conversationId,
+      req.user.id,
+      dto,
+    );
   }
 }
