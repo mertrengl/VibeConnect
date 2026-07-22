@@ -10,6 +10,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { MessagesService } from './messages.service';
 import { JwtService } from '@nestjs/jwt';
+import { Inject, forwardRef } from '@nestjs/common';
 
 type userPresence = 'ONLINE' | 'OFFLINE' | 'AWAY' | 'BUSY';
 
@@ -50,6 +51,7 @@ export class MessagesGateway
   private activeUsers: Map<string, PresenceStatus> = new Map();
 
   constructor(
+    @Inject(forwardRef(() => MessagesService))
     private readonly messagesService: MessagesService,
     private readonly jwtService: JwtService,
   ) {}

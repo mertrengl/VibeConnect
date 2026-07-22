@@ -6,7 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma } from '../../generated/prisma/client';
+import { Prisma } from '@prisma/client';
 import { UpdateProfileDto } from './dtos/update_profile.dto';
 import { ChangePasswordDto } from './dtos/change_password.dto';
 import * as bcrypt from 'bcrypt';

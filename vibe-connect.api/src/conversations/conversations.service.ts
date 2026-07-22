@@ -417,16 +417,16 @@ export class ConversationsService {
             { description: { contains: query, mode: 'insensitive' } },
           ],
         }),
-        include: {
-          _count: {
-            select: {
-              participants: true,
-            },
+      },
+      include: {
+        _count: {
+          select: {
+            participants: true,
           },
-          participants: {
-            where: { user_id: userId },
-            select: { role: true },
-          },
+        },
+        participants: {
+          where: { user_id: userId },
+          select: { role: true },
         },
       },
       orderBy: {

@@ -2,6 +2,8 @@ import {
   Injectable,
   ForbiddenException,
   NotFoundException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMessageDto } from './dtos/create_message.dto';
@@ -16,6 +18,7 @@ import { MessagesGateway } from './messages.gateway';
 export class MessagesService {
   constructor(
     private prisma: PrismaService,
+    @Inject(forwardRef(() => MessagesGateway))
     private messagesGateway: MessagesGateway,
   ) {}
 
