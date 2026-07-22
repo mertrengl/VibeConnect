@@ -2,12 +2,14 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ParticipantRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateConversationDto } from './dtos/create_conversation.dto';
 import { MarkAsReadDto } from './dtos/mark_as_read.dto';
-
+import { AddParticipantDto } from './dtos/add_participant.dto';
+import { UpdateParticipantRoleDto } from './dtos/update_participant_role.dto';
 @Injectable()
 export class ConversationsService {
   constructor(private prisma: PrismaService) {}
@@ -209,5 +211,197 @@ export class ConversationsService {
       );
     }
     return conversation;
+  }
+
+  async addParticipants(
+    conversationID: string,
+    currentUserId: string,
+    dto: AddParticipantDto,
+  ) {
+    const conversation = await this.prisma.conversations.findUnique({
+      where: { id: conversationID },
+    });
+
+    if (!conversation) {
+      throw new NotFoundException('Konuşma bulunamadı.');
+    }
+
+    if (!conversation.is_group) {
+      throw new BadRequestException('Bu konuşma bir grup konuşması değil.');
+    }
+
+    const currentParticipant = await this.prisma.participants.findUnique({
+      where: {
+        conversation_id_user_id: {
+          conversation_id: conversationID,
+          user_id: currentUserId,
+        },
+      },
+    });
+
+    if (
+      !currentParticipant ||
+      currentParticipant.role === ParticipantRole.MEMBER
+    ) {
+      throw new BadRequestException(
+        'Bu işlemi gerçekleştirmek için yeterli yetkiniz yok.',
+      );
+    }
+
+    const targetUser = await this.prisma.users.findUnique({
+      where: { id: dto.targetUserId },
+    });
+
+    if (!targetUser) {
+      throw new NotFoundException('Hedef kullanıcı bulunamadı.');
+    }
+
+    const existingParticipant = await this.prisma.participants.findUnique({
+      where: {
+        conversation_id_user_id: {
+          conversation_id: conversationID,
+          user_id: dto.targetUserId,
+        },
+      },
+    });
+
+    if (existingParticipant) {
+      throw new BadRequestException('Kullanıcı zaten konuşmada mevcut.');
+    }
+
+    return await this.prisma.participants.create({
+      data: {
+        conversation_id: conversationID,
+        user_id: dto.targetUserId,
+        role: ParticipantRole.MEMBER,
+      },
+      include: {
+        users: {
+          select: { id: true, username: true },
+        },
+      },
+    });
+  }
+
+  async deleteParticipant(
+    conversationID: string,
+    currentUserId: string,
+    targetUserId: string,
+  ) {
+    const conversation = await this.prisma.conversations.findUnique({
+      where: { id: conversationID },
+    });
+
+    if (!conversation || !conversation.is_group) {
+      throw new BadRequestException('Geçersiz konuşma.');
+    }
+
+    const currentParticipant = await this.prisma.participants.findUnique({
+      where: {
+        conversation_id_user_id: {
+          conversation_id: conversationID,
+          user_id: currentUserId,
+        },
+      },
+    });
+
+    const targetParticipant = await this.prisma.participants.findUnique({
+      where: {
+        conversation_id_user_id: {
+          conversation_id: conversationID,
+          user_id: targetUserId,
+        },
+      },
+    });
+
+    if (!currentParticipant || !targetParticipant) {
+      throw new NotFoundException('Katılımcı bulunamadı.');
+    }
+
+    const isSelf = currentUserId === targetUserId;
+
+    if (!isSelf) {
+      if (currentParticipant.role === ParticipantRole.MEMBER) {
+        throw new ForbiddenException(
+          'Bu işlemi gerçekleştirmek için yeterli yetkiniz yok.',
+        );
+      }
+
+      if (
+        currentParticipant.role === ParticipantRole.ADMIN &&
+        targetParticipant.role !== ParticipantRole.MEMBER
+      ) {
+        throw new ForbiddenException(
+          'Bir yönetici yalnızca normal üyeleri konuşmadan çıkarabilir.',
+        );
+      }
+    }
+
+    return await this.prisma.participants.delete({
+      where: {
+        conversation_id_user_id: {
+          conversation_id: conversationID,
+          user_id: targetUserId,
+        },
+      },
+    });
+  }
+
+  async updateParticipantRole(
+    conversationID: string,
+    currentUserId: string,
+    targetUserId: string,
+    dto: UpdateParticipantRoleDto,
+  ) {
+    const conversation = await this.prisma.conversations.findUnique({
+      where: { id: conversationID },
+    });
+
+    if (!conversation || !conversation.is_group) {
+      throw new BadRequestException('Geçersiz grup konuşması.');
+    }
+
+    const currentParticipant = await this.prisma.participants.findUnique({
+      where: {
+        conversation_id_user_id: {
+          conversation_id: conversationID,
+          user_id: currentUserId,
+        },
+      },
+    });
+
+    if (
+      !currentParticipant ||
+      currentParticipant.role !== ParticipantRole.OWNER
+    ) {
+      throw new ForbiddenException(
+        'Sadece grup sahibi üye rollerini değiştirebilir.',
+      );
+    }
+
+    const targetParticipant = await this.prisma.participants.findUnique({
+      where: {
+        conversation_id_user_id: {
+          conversation_id: conversationID,
+          user_id: targetUserId,
+        },
+      },
+    });
+
+    if (!targetParticipant) {
+      throw new NotFoundException('Hedef kullanıcı grupta bulunamadı.');
+    }
+
+    return await this.prisma.participants.update({
+      where: {
+        conversation_id_user_id: {
+          conversation_id: conversationID,
+          user_id: targetUserId,
+        },
+      },
+      data: {
+        role: dto.role,
+      },
+    });
   }
 }

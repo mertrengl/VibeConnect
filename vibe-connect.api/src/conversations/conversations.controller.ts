@@ -8,12 +8,15 @@ import {
   Query,
   Patch,
   Param,
+  Delete,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateConversationDto } from './dtos/create_conversation.dto';
 import { ConversationsService } from './conversations.service';
 import { SearchConversationsDto } from './dtos/search_conversations.dto';
 import { MarkAsReadDto } from './dtos/mark_as_read.dto';
+import { UpdateParticipantRoleDto } from './dtos/update_participant_role.dto';
+import { AddParticipantDto } from './dtos/add_participant.dto';
 
 type AuthenticatedRequest = {
   user: {
@@ -73,6 +76,47 @@ export class ConversationsController {
     return this.conversationService.markAsRead(
       conversationId,
       req.user.id,
+      dto,
+    );
+  }
+
+  @Post(':id/participants')
+  async addParticipant(
+    @Param('id') conversationId: string,
+    @Body() dto: AddParticipantDto,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.conversationService.addParticipants(
+      conversationId,
+      req.user.id,
+      dto,
+    );
+  }
+
+  @Delete(':id/participants/:userId')
+  async deleteParticipant(
+    @Param('id') conversationId: string,
+    @Param('userId') targetUserId: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.conversationService.deleteParticipant(
+      conversationId,
+      req.user.id,
+      targetUserId,
+    );
+  }
+
+  @Patch(':id/participants/:userId')
+  async updateParticipantRole(
+    @Param('id') conversationId: string,
+    @Param('userId') targetUserId: string,
+    @Body() dto: UpdateParticipantRoleDto,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.conversationService.updateParticipantRole(
+      conversationId,
+      req.user.id,
+      targetUserId,
       dto,
     );
   }
