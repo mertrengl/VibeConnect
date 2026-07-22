@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -9,10 +10,14 @@ import { Prisma } from '../../generated/prisma/client';
 import { UpdateProfileDto } from './dtos/update_profile.dto';
 import { ChangePasswordDto } from './dtos/change_password.dto';
 import * as bcrypt from 'bcrypt';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   async searchUsers(query: string, currentUserId: string) {
     return await this.prisma.users.findMany({
@@ -103,5 +108,36 @@ export class UsersService {
     });
 
     return { message: 'Şifre başarıyla değiştirildi.' };
+  }
+  async updateAvatar(userId: string, file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Dosya bulunamadı.');
+    }
+    const uploadResult = await this.cloudinaryService.uploadImage(file);
+    const imageUrl = (uploadResult.secure_url || uploadResult.url) as string;
+
+    return await this.prisma.users.update({
+      where: { id: userId },
+      data: { avatar_url: imageUrl },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        avatar_url: true,
+      },
+    });
+  }
+
+  async removeAvatar(userId: string) {
+    return await this.prisma.users.update({
+      where: { id: userId },
+      data: { avatar_url: null },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        avatar_url: true,
+      },
+    });
   }
 }

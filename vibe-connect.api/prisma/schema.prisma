@@ -93,6 +93,7 @@ model users {
   username                                                        String                    @unique @db.VarChar(50)
   email                                                           String                    @unique @db.Citext
   password_hash                                                   String                    @db.VarChar(255)
+  avatar_url                                                      String?                   @db.VarChar(255)
   created_at                                                      DateTime                  @default(now()) @db.Timestamptz(6)
   deleted_at                                                      DateTime?                 @db.Timestamptz(6)
   direct_messages_mapping_direct_messages_mapping_user1_idTousers direct_messages_mapping[] @relation("direct_messages_mapping_user1_idTousers")
