@@ -8,6 +8,7 @@ import { CreateMessageDto } from './dtos/create_message.dto';
 import { UpdateMessageDto } from './dtos/update_message.dto';
 import { ParticipantRole } from '@prisma/client';
 import { GetMessagesQueryDto } from './dtos/get_messages_query.dto';
+import { DeleteMessageQueryDto } from './dtos/delete_message_query.dto';
 
 @Injectable()
 export class MessagesService {
@@ -50,6 +51,11 @@ export class MessagesService {
     return await this.prisma.messages.findMany({
       where: {
         conversation_id: conversationId,
+        message_deletions: {
+          none: {
+            user_id: userId,
+          },
+        },
       },
       ...(dto.cursor && {
         cursor: { id: dto.cursor },
@@ -96,7 +102,11 @@ export class MessagesService {
     });
   }
 
-  async deleteMessage(messageId: string, userId: string) {
+  async deleteMessage(
+    messageId: string,
+    userId: string,
+    dto: DeleteMessageQueryDto,
+  ) {
     const message = await this.prisma.messages.findUnique({
       where: {
         id: messageId,
@@ -105,28 +115,49 @@ export class MessagesService {
     if (!message) {
       throw new NotFoundException('Mesaj bulunamadı.');
     }
-    if (message.sender_id === userId) {
+    const isParticipant = await this.prisma.participants.findFirst({
+      where: {
+        conversation_id: message.conversation_id,
+        user_id: userId,
+      },
+    });
+    if (!isParticipant) {
+      throw new ForbiddenException('Bu konuşmaya erişim yetkiniz yok.');
+    }
+
+    if (dto.forEveryone) {
+      const isSender = message.sender_id === userId;
+      const isAdmin =
+        isParticipant.role === ParticipantRole.ADMIN ||
+        isParticipant.role === ParticipantRole.OWNER;
+      if (!isSender && !isAdmin) {
+        throw new ForbiddenException(
+          'Bu mesajı herkes için silme yetkiniz yok.',
+        );
+      }
       return await this.prisma.messages.delete({
         where: {
           id: messageId,
         },
       });
     }
-    if (message.sender_id !== userId) {
-      const isParticipant = await this.prisma.participants.findFirst({
-        where: {
-          conversation_id: message.conversation_id,
+
+    const existingDeletion = await this.prisma.message_deletions.findUnique({
+      where: {
+        message_id_user_id: {
+          message_id: messageId,
           user_id: userId,
         },
-      });
-      if (isParticipant?.role === ParticipantRole.ADMIN) {
-        return await this.prisma.messages.delete({
-          where: {
-            id: messageId,
-          },
-        });
-      }
-      throw new ForbiddenException('Bu mesajı silme yetkiniz yok.');
+      },
+    });
+    if (existingDeletion) {
+      return { message: 'Mesaj zaten silinmiş.' };
     }
+    return await this.prisma.message_deletions.create({
+      data: {
+        message_id: messageId,
+        user_id: userId,
+      },
+    });
   }
 }

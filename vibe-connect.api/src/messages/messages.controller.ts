@@ -16,6 +16,7 @@ import { UpdateMessageDto } from './dtos/update_message.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Request as ExpressRequest } from 'express';
 import { GetMessagesQueryDto } from './dtos/get_messages_query.dto';
+import { DeleteMessageQueryDto } from './dtos/delete_message_query.dto';
 
 interface RequestWithUser extends ExpressRequest {
   user: {
@@ -65,8 +66,13 @@ export class MessagesController {
   @Delete(':messageId')
   async deleteMessage(
     @Param('messageId') messageId: string,
+    @Query() dto: DeleteMessageQueryDto,
     @Request() req: RequestWithUser,
   ) {
-    return await this.messagesService.deleteMessage(messageId, req.user.id);
+    return await this.messagesService.deleteMessage(
+      messageId,
+      req.user.id,
+      dto,
+    );
   }
 }
