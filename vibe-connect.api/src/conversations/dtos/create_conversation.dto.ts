@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  MaxLength,
 } from 'class-validator';
 
 export class CreateConversationDto {
@@ -22,4 +23,13 @@ export class CreateConversationDto {
   @IsBoolean()
   @IsOptional()
   isGroup?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  isPublic?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(255, { message: 'Açıklama en fazla 255 karakter olabilir.' })
+  description?: string;
 }

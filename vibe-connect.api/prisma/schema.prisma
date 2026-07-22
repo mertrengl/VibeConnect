@@ -20,7 +20,9 @@ enum ParticipantRole {
 model conversations {
   id                      String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                    String?                   @db.VarChar(100)
+  description             String?                   @db.VarChar(255)
   is_group                Boolean                   @default(false)
+  is_public               Boolean                   @default(false)
   created_at              DateTime                  @default(now()) @db.Timestamptz(6)
   last_message_at         DateTime                  @default(now()) @db.Timestamptz(6)
   direct_messages_mapping direct_messages_mapping?

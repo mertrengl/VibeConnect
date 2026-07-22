@@ -17,6 +17,7 @@ import { SearchConversationsDto } from './dtos/search_conversations.dto';
 import { MarkAsReadDto } from './dtos/mark_as_read.dto';
 import { UpdateParticipantRoleDto } from './dtos/update_participant_role.dto';
 import { AddParticipantDto } from './dtos/add_participant.dto';
+import { GetPublicConversationsQueryDto } from './dtos/get_public_conversations_query.dto';
 
 type AuthenticatedRequest = {
   user: {
@@ -56,6 +57,14 @@ export class ConversationsController {
     return this.conversationService.searchConversations(req.user.id, dto.q);
   }
 
+  @Get('public')
+  async getPublicConversations(
+    @Request() req: AuthenticatedRequest,
+    @Query() dto: GetPublicConversationsQueryDto,
+  ) {
+    return this.conversationService.getPublicConversations(req.user.id, dto.q);
+  }
+
   @Get(':id')
   async getConversationById(
     @Param('id') conversationId: string,
@@ -66,7 +75,16 @@ export class ConversationsController {
       req.user.id,
     );
   }
-
+  @Post(':id/join')
+  async joinPublicConversation(
+    @Param('id') conversationId: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.conversationService.joinPublicConversation(
+      conversationId,
+      req.user.id,
+    );
+  }
   @Patch(':id/read')
   async markAsRead(
     @Param('id') conversationId: string,

@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  ConflictException,
 } from '@nestjs/common';
 import { ParticipantRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -78,7 +79,8 @@ export class ConversationsService {
       const conversation = await tx.conversations.create({
         data: {
           name: dto.name,
-          is_group: dto.isGroup ?? false,
+          is_group: true,
+          is_public: dto.isPublic ?? false,
         },
       });
       await tx.participants.createMany({
@@ -401,6 +403,71 @@ export class ConversationsService {
       },
       data: {
         role: dto.role,
+      },
+    });
+  }
+  async getPublicConversations(userId: string, query?: string) {
+    return await this.prisma.conversations.findMany({
+      where: {
+        is_group: true,
+        is_public: true,
+        ...(query && {
+          OR: [
+            { name: { contains: query, mode: 'insensitive' } },
+            { description: { contains: query, mode: 'insensitive' } },
+          ],
+        }),
+        include: {
+          _count: {
+            select: {
+              participants: true,
+            },
+          },
+          participants: {
+            where: { user_id: userId },
+            select: { role: true },
+          },
+        },
+      },
+      orderBy: {
+        last_message_at: 'desc',
+      },
+      take: 20,
+    });
+  }
+
+  async joinPublicConversation(conversationId: string, userId: string) {
+    const conversation = await this.prisma.conversations.findUnique({
+      where: { id: conversationId },
+    });
+
+    if (!conversation || !conversation.is_group) {
+      throw new NotFoundException('Grup bulunamadı.');
+    }
+    if (!conversation.is_public) {
+      throw new ForbiddenException('Bu grup konuşması herkese açık değil.');
+    }
+    const existingParticipant = await this.prisma.participants.findUnique({
+      where: {
+        conversation_id_user_id: {
+          conversation_id: conversationId,
+          user_id: userId,
+        },
+      },
+    });
+
+    if (existingParticipant) {
+      throw new ConflictException('Zaten bu gruba katılmışsınız.');
+    }
+
+    return await this.prisma.participants.create({
+      data: {
+        conversation_id: conversationId,
+        user_id: userId,
+        role: ParticipantRole.MEMBER,
+      },
+      include: {
+        conversations: true, // ← DÜZELTİLDİ: Katılınan grup detayını döner
       },
     });
   }
