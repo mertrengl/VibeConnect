@@ -6,7 +6,7 @@ import {
 import { ParticipantRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateConversationDto } from './dtos/create_conversation.dto';
-import { MarkAsReadDto } from './dtos/mark_as_read.dot';
+import { MarkAsReadDto } from './dtos/mark_as_read.dto';
 
 @Injectable()
 export class ConversationsService {
@@ -183,5 +183,31 @@ export class ConversationsService {
         last_read_message_id: dto.lastReadMessageId,
       },
     });
+  }
+  async getConversationById(conversationId: string, userId: string) {
+    const conversation = await this.prisma.conversations.findUnique({
+      where: { id: conversationId },
+      include: {
+        participants: {
+          include: {
+            users: {
+              select: { id: true, username: true },
+            },
+          },
+        },
+      },
+    });
+    if (!conversation) {
+      throw new NotFoundException('Konuşma bulunamadı.');
+    }
+    const isParticipant = conversation.participants.some(
+      (p) => p.user_id === userId,
+    );
+    if (!isParticipant) {
+      throw new NotFoundException(
+        'Kullanıcı bu konuşmanın bir katılımcısı değil.',
+      );
+    }
+    return conversation;
   }
 }

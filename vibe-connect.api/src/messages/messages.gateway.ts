@@ -151,11 +151,18 @@ export class MessagesGateway
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() payload: SendMessagePayload,
   ) {
-    const message = await this.messagesService.createMessage(
-      { conversationId: payload.conversationId, content: payload.content },
-      client.data.sub,
-    );
-    this.server.to(payload.conversationId).emit('newMessage', message);
+    try {
+      const message = await this.messagesService.createMessage(
+        { conversationId: payload.conversationId, content: payload.content },
+        client.data.sub,
+      );
+      this.server.to(payload.conversationId).emit('newMessage', message);
+    } catch (error) {
+      client.emit('error', {
+        message:
+          error instanceof Error ? error.message : 'Mesaj gönderilemedi.',
+      });
+    }
   }
   @SubscribeMessage('updateStatus')
   handleUpdateStatus(

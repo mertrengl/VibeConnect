@@ -13,7 +13,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateConversationDto } from './dtos/create_conversation.dto';
 import { ConversationsService } from './conversations.service';
 import { SearchConversationsDto } from './dtos/search_conversations.dto';
-import { MarkAsReadDto } from './dtos/mark_as_read.dot';
+import { MarkAsReadDto } from './dtos/mark_as_read.dto';
 
 type AuthenticatedRequest = {
   user: {
@@ -51,6 +51,17 @@ export class ConversationsController {
     @Query() dto: SearchConversationsDto,
   ) {
     return this.conversationService.searchConversations(req.user.id, dto.q);
+  }
+
+  @Get(':id')
+  async getConversationById(
+    @Param('id') conversationId: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.conversationService.getConversationById(
+      conversationId,
+      req.user.id,
+    );
   }
 
   @Patch(':id/read')
