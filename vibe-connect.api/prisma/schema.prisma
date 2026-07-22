@@ -64,6 +64,7 @@ model messages {
   created_at           DateTime            @default(now()) @db.Timestamptz(6)
   deleted_for_everyone Boolean             @default(false)
   message_deletions    message_deletions[]
+  message_reactions    message_reactions[]
   conversations        conversations       @relation(fields: [conversation_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users                users               @relation(fields: [sender_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
   participants         participants[]     @relation("LastReadMessage")
@@ -99,8 +100,24 @@ model users {
   direct_messages_mapping_direct_messages_mapping_user1_idTousers direct_messages_mapping[] @relation("direct_messages_mapping_user1_idTousers")
   direct_messages_mapping_direct_messages_mapping_user2_idTousers direct_messages_mapping[] @relation("direct_messages_mapping_user2_idTousers")
   message_deletions                                               message_deletions[]
+  message_reactions                                               message_reactions[]
   messages                                                        messages[]
   participants                                                    participants[]
 
+  @@schema("vibeconnect")
+}
+
+model message_reactions {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  message_id String   @db.Uuid
+  user_id    String   @db.Uuid
+  emoji      String   @db.VarChar(10)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+
+  messages   messages @relation(fields: [message_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([message_id, user_id, emoji])
+  @@index([message_id])
   @@schema("vibeconnect")
 }

@@ -9,6 +9,7 @@ import { UpdateMessageDto } from './dtos/update_message.dto';
 import { ParticipantRole } from '@prisma/client';
 import { GetMessagesQueryDto } from './dtos/get_messages_query.dto';
 import { DeleteMessageQueryDto } from './dtos/delete_message_query.dto';
+import { ToggleReactionDto } from './dtos/toggle_reaction.dto';
 import { MessagesGateway } from './messages.gateway';
 
 @Injectable()
@@ -74,6 +75,13 @@ export class MessagesService {
           select: {
             id: true,
             username: true,
+          },
+        },
+        message_reactions: {
+          include: {
+            users: {
+              select: { id: true, username: true },
+            },
           },
         },
       },
@@ -173,5 +181,80 @@ export class MessagesService {
         user_id: userId,
       },
     });
+  }
+
+  async toggleReaction(
+    messageId: string,
+    userId: string,
+    dto: ToggleReactionDto,
+  ) {
+    const message = await this.prisma.messages.findUnique({
+      where: {
+        id: messageId,
+      },
+    });
+    if (!message) {
+      throw new NotFoundException('Mesaj bulunamadı.');
+    }
+    const isParticipant = await this.prisma.participants.findFirst({
+      where: {
+        conversation_id: message.conversation_id,
+        user_id: userId,
+      },
+    });
+    if (!isParticipant) {
+      throw new ForbiddenException('Bu konuşmaya erişim yetkiniz yok.');
+    }
+
+    const existingReaction = await this.prisma.message_reactions.findFirst({
+      where: {
+        message_id: messageId,
+        user_id: userId,
+      },
+    });
+
+    if (existingReaction) {
+      if (existingReaction.emoji === dto.emoji) {
+        await this.prisma.message_reactions.delete({
+          where: {
+            id: existingReaction.id,
+          },
+        });
+        this.messagesGateway.notifyReactionRemoved(message.conversation_id, {
+          messageId,
+          userId,
+          emoji: dto.emoji,
+        });
+        return { action: 'removed', emoji: dto.emoji };
+      }
+      await this.prisma.message_reactions.delete({
+        where: {
+          id: existingReaction.id,
+        },
+      });
+      this.messagesGateway.notifyReactionRemoved(message.conversation_id, {
+        messageId,
+        userId,
+        emoji: existingReaction.emoji,
+      });
+    }
+
+    const newReaction = await this.prisma.message_reactions.create({
+      data: {
+        message_id: messageId,
+        user_id: userId,
+        emoji: dto.emoji,
+      },
+      include: {
+        users: {
+          select: { id: true, username: true },
+        },
+      },
+    });
+    this.messagesGateway.notifyReactionAdded(
+      message.conversation_id,
+      newReaction,
+    );
+    return { action: 'added', reaction: newReaction };
   }
 }

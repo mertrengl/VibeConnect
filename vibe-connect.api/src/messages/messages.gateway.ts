@@ -115,6 +115,16 @@ export class MessagesGateway
     console.log(`İstemci bağlantısı kesildi: ${client.id}`);
   }
 
+  notifyReactionAdded(conversationId: string, reaction: any) {
+    this.server.to(conversationId).emit('reactionAdded', reaction);
+  }
+
+  notifyReactionRemoved(
+    conversationId: string,
+    data: { messageId: string; userId: string; emoji: string },
+  ) {
+    this.server.to(conversationId).emit('reactionRemoved', data);
+  }
   @SubscribeMessage('ping')
   handlePing(
     @ConnectedSocket() client: AuthenticatedSocket,

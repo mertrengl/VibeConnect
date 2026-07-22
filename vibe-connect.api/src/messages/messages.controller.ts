@@ -17,6 +17,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Request as ExpressRequest } from 'express';
 import { GetMessagesQueryDto } from './dtos/get_messages_query.dto';
 import { DeleteMessageQueryDto } from './dtos/delete_message_query.dto';
+import { ToggleReactionDto } from './dtos/toggle_reaction.dto';
 
 interface RequestWithUser extends ExpressRequest {
   user: {
@@ -70,6 +71,19 @@ export class MessagesController {
     @Request() req: RequestWithUser,
   ) {
     return await this.messagesService.deleteMessage(
+      messageId,
+      req.user.id,
+      dto,
+    );
+  }
+
+  @Post(':messageId/reactions')
+  async toggleReaction(
+    @Param('messageId') messageId: string,
+    @Body() dto: ToggleReactionDto,
+    @Request() req: RequestWithUser,
+  ) {
+    return await this.messagesService.toggleReaction(
       messageId,
       req.user.id,
       dto,
