@@ -9,10 +9,14 @@ import { UpdateMessageDto } from './dtos/update_message.dto';
 import { ParticipantRole } from '@prisma/client';
 import { GetMessagesQueryDto } from './dtos/get_messages_query.dto';
 import { DeleteMessageQueryDto } from './dtos/delete_message_query.dto';
+import { MessagesGateway } from './messages.gateway';
 
 @Injectable()
 export class MessagesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private messagesGateway: MessagesGateway,
+  ) {}
 
   async createMessage(dto: CreateMessageDto, userId: string) {
     const isParticipant = await this.prisma.participants.findFirst({
@@ -92,7 +96,7 @@ export class MessagesService {
     if (message.sender_id !== userId) {
       throw new ForbiddenException('Bu mesajı güncelleme yetkiniz yok.');
     }
-    return await this.prisma.messages.update({
+    const updatedMessage = await this.prisma.messages.update({
       where: {
         id: messageId,
       },
@@ -100,6 +104,11 @@ export class MessagesService {
         content: dto.content,
       },
     });
+    this.messagesGateway.notifyMessageUpdate(
+      message.conversation_id,
+      updatedMessage,
+    );
+    return updatedMessage;
   }
 
   async deleteMessage(
@@ -135,11 +144,16 @@ export class MessagesService {
           'Bu mesajı herkes için silme yetkiniz yok.',
         );
       }
-      return await this.prisma.messages.delete({
+      const deletedMessage = await this.prisma.messages.delete({
         where: {
           id: messageId,
         },
       });
+      this.messagesGateway.notifyMessageDelete(
+        message.conversation_id,
+        messageId,
+      );
+      return deletedMessage;
     }
 
     const existingDeletion = await this.prisma.message_deletions.findUnique({

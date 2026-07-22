@@ -92,6 +92,17 @@ export class MessagesGateway
       client.disconnect();
     }
   }
+  // Mesaj güncellendiğinde odaya haber ver
+  notifyMessageUpdate(conversationId: string, updatedMessage: any) {
+    this.server.to(conversationId).emit('messageUpdated', updatedMessage);
+  }
+  // Mesaj silindiğinde odaya haber ver
+  notifyMessageDelete(conversationId: string, messageId: string) {
+    this.server.to(conversationId).emit('messageDeleted', {
+      messageId,
+      conversationId,
+    });
+  }
 
   handleDisconnect(client: AuthenticatedSocket) {
     const userId = client.data?.sub;
