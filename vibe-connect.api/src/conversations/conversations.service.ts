@@ -132,7 +132,7 @@ export class ConversationsService {
         id: convo.id,
         name: displayName,
         isGroup: convo.is_group,
-        createdAt: convo.created_at,
+        created_at: convo.created_at,
         otherUser:
           !convo.is_group && convo.participants[0]
             ? convo.participants[0].users

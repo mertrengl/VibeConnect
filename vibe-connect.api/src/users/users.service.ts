@@ -40,7 +40,7 @@ export class UsersService {
         id: true,
         username: true,
         email: true,
-        createdAt: true,
+        created_at: true,
       },
     });
   }
