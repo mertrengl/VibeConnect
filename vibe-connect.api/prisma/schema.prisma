@@ -49,6 +49,7 @@ model conversations {
   id                      String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                    String?                   @db.VarChar(100)
   description             String?                   @db.VarChar(255)
+  avatar_url              String?                   @db.VarChar(255)
   category                GroupCategory             @default(GENERAL)
   is_group                Boolean                   @default(false)
   is_public               Boolean                   @default(false)

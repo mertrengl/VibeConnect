@@ -9,7 +9,6 @@ import {
   IsUUID,
   MaxLength,
 } from 'class-validator';
-import { Transform } from 'class-transformer';
 import { GroupCategory } from '@prisma/client';
 
 export class CreateConversationDto {
@@ -25,19 +24,21 @@ export class CreateConversationDto {
 
   @IsBoolean()
   @IsOptional()
-  @Transform(
-    ({ obj, value }: { obj: Record<string, boolean>; value?: boolean }) =>
-      value ?? obj?.is_group,
-  )
   isGroup?: boolean;
+
+  // Frontend 'is_group' yollarsa da ValidationPipe engellemesin!
+  @IsBoolean()
+  @IsOptional()
+  is_group?: boolean;
 
   @IsBoolean()
   @IsOptional()
-  @Transform(
-    ({ obj, value }: { obj: Record<string, boolean>; value?: boolean }) =>
-      value ?? obj?.is_public,
-  )
   isPublic?: boolean;
+
+  // Frontend 'is_public' yollarsa da ValidationPipe engellemesin!
+  @IsBoolean()
+  @IsOptional()
+  is_public?: boolean;
 
   @IsOptional()
   @IsString()

@@ -11,9 +11,14 @@ import { CreateConversationDto } from './dtos/create_conversation.dto';
 import { MarkAsReadDto } from './dtos/mark_as_read.dto';
 import { AddParticipantDto } from './dtos/add_participant.dto';
 import { UpdateParticipantRoleDto } from './dtos/update_participant_role.dto';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+
 @Injectable()
 export class ConversationsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   async createConversation(userId: string, dto: CreateConversationDto) {
     return await this.prisma.$transaction(async (tx) => {
@@ -76,13 +81,16 @@ export class ConversationsService {
         });
         return conversation;
       }
+      const isGroupVal = dto.isGroup ?? dto.is_group ?? true;
+      const isPublicVal = dto.isPublic ?? dto.is_public ?? false;
+
       const conversation = await tx.conversations.create({
         data: {
           name: dto.name,
           description: dto.description,
           category: dto.category ?? 'GENERAL',
-          is_group: true,
-          is_public: dto.isPublic ?? false,
+          is_group: isGroupVal,
+          is_public: isPublicVal,
         },
       });
       await tx.participants.createMany({
@@ -90,7 +98,7 @@ export class ConversationsService {
           conversation_id: conversation.id,
           user_id: pId,
           role:
-            dto.isGroup && pId === userId
+            isGroupVal && pId === userId
               ? ParticipantRole.OWNER
               : ParticipantRole.MEMBER,
         })),
@@ -135,6 +143,7 @@ export class ConversationsService {
       return {
         id: convo.id,
         name: displayName,
+        avatar_url: convo.avatar_url,
         isGroup: convo.is_group,
         created_at: convo.created_at,
         category: convo.category,
@@ -479,8 +488,139 @@ export class ConversationsService {
         role: ParticipantRole.MEMBER,
       },
       include: {
-        conversations: true, // ← DÜZELTİLDİ: Katılınan grup detayını döner
+        conversations: true,
       },
+    });
+  }
+
+  async leaveConversation(conversationId: string, userId: string) {
+    const conversation = await this.prisma.conversations.findUnique({
+      where: { id: conversationId },
+    });
+
+    if (!conversation || !conversation.is_group) {
+      throw new NotFoundException('Grup bulunamadı.');
+    }
+
+    const participant = await this.prisma.participants.findUnique({
+      where: {
+        conversation_id_user_id: {
+          conversation_id: conversationId,
+          user_id: userId,
+        },
+      },
+    });
+
+    if (!participant) {
+      throw new NotFoundException('Bu grubun bir üyesi değilsiniz.');
+    }
+
+    if (participant.role === ParticipantRole.OWNER) {
+      const otherParticipantsCount = await this.prisma.participants.count({
+        where: {
+          conversation_id: conversationId,
+          user_id: { not: userId },
+        },
+      });
+
+      if (otherParticipantsCount > 0) {
+        throw new BadRequestException(
+          'Grup sahibi gruptan ayrılamaz. Önce sahipliği devretmeli veya grubu silmelisiniz.',
+        );
+      }
+
+      return await this.prisma.conversations.delete({
+        where: { id: conversationId },
+      });
+    }
+
+    return await this.prisma.participants.delete({
+      where: {
+        conversation_id_user_id: {
+          conversation_id: conversationId,
+          user_id: userId,
+        },
+      },
+    });
+  }
+
+  async updateGroupAvatar(
+    conversationId: string,
+    currentUserId: string,
+    file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Avatar dosyası sağlanmadı.');
+    }
+    const conversation = await this.prisma.conversations.findUnique({
+      where: { id: conversationId },
+    });
+
+    if (!conversation || !conversation.is_group) {
+      throw new BadRequestException('Geçersiz grup konuşması.');
+    }
+
+    const currentParticipant = await this.prisma.participants.findUnique({
+      where: {
+        conversation_id_user_id: {
+          conversation_id: conversationId,
+          user_id: currentUserId,
+        },
+      },
+    });
+
+    if (
+      !currentParticipant ||
+      currentParticipant.role === ParticipantRole.MEMBER
+    ) {
+      throw new ForbiddenException(
+        'Bu işlemi gerçekleştirmek için yeterli yetkiniz yok.',
+      );
+    }
+
+    const uploadResult = (await this.cloudinaryService.uploadFile(
+      file,
+      'vibeconnect_group_avatars',
+    )) as Record<string, any>;
+
+    const avatarUrl = String(uploadResult.secure_url || uploadResult.url || '');
+
+    return await this.prisma.conversations.update({
+      where: { id: conversationId },
+      data: { avatar_url: avatarUrl },
+    });
+  }
+
+  async removeGroupAvatar(conversationId: string, currentUserId: string) {
+    const conversation = await this.prisma.conversations.findUnique({
+      where: { id: conversationId },
+    });
+
+    if (!conversation || !conversation.is_group) {
+      throw new BadRequestException('Geçersiz grup konuşması.');
+    }
+
+    const currentParticipant = await this.prisma.participants.findUnique({
+      where: {
+        conversation_id_user_id: {
+          conversation_id: conversationId,
+          user_id: currentUserId,
+        },
+      },
+    });
+
+    if (
+      !currentParticipant ||
+      currentParticipant.role === ParticipantRole.MEMBER
+    ) {
+      throw new ForbiddenException(
+        'Bu işlemi gerçekleştirmek için yeterli yetkiniz yok.',
+      );
+    }
+
+    return await this.prisma.conversations.update({
+      where: { id: conversationId },
+      data: { avatar_url: null },
     });
   }
 }

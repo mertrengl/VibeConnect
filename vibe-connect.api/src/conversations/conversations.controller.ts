@@ -9,6 +9,9 @@ import {
   Patch,
   Param,
   Delete,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateConversationDto } from './dtos/create_conversation.dto';
@@ -19,6 +22,8 @@ import { UpdateParticipantRoleDto } from './dtos/update_participant_role.dto';
 import { AddParticipantDto } from './dtos/add_participant.dto';
 import { GetPublicConversationsQueryDto } from './dtos/get_public_conversations_query.dto';
 import { GroupCategory } from '@prisma/client';
+import { FileInterceptor } from '@nestjs/platform-express';
+import 'multer';
 
 type AuthenticatedRequest = {
   user: {
@@ -123,6 +128,17 @@ export class ConversationsController {
     );
   }
 
+  @Post(':id/leave')
+  async leaveConversation(
+    @Param('id') conversationId: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.conversationService.leaveConversation(
+      conversationId,
+      req.user.id,
+    );
+  }
+
   @Delete(':id/participants/:userId')
   async deleteParticipant(
     @Param('id') conversationId: string,
@@ -148,6 +164,46 @@ export class ConversationsController {
       req.user.id,
       targetUserId,
       dto,
+    );
+  }
+
+  @Post(':id/avatar')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 5 * 1024 * 1024 }, // Max 5MB
+      fileFilter: (req, file, callback) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
+          return callback(
+            new BadRequestException(
+              'Sadece JPG, JPEG, PNG ve WEBP formatları desteklenmektedir.',
+            ),
+            false,
+          );
+        }
+        callback(null, true);
+      },
+    }),
+  )
+  async updateGroupAvatar(
+    @Param('id') conversationId: string,
+    @Request() req: AuthenticatedRequest,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.conversationService.updateGroupAvatar(
+      conversationId,
+      req.user.id,
+      file,
+    );
+  }
+
+  @Delete(':id/avatar')
+  async removeGroupAvatar(
+    @Param('id') conversationId: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.conversationService.removeGroupAvatar(
+      conversationId,
+      req.user.id,
     );
   }
 }
