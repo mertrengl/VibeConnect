@@ -41,4 +41,27 @@ export class CloudinaryService {
   ): Promise<UploadApiResponse | UploadApiErrorResponse> {
     return this.uploadFile(file, 'vibeconnect_media');
   }
+
+  async deleteFile(publicId: string): Promise<any> {
+    try {
+      return await cloudinary.uploader.destroy(publicId);
+    } catch (error) {
+      const errorMessage =
+        typeof error === 'object' && error !== null && 'message' in error
+          ? String((error as Record<string, unknown>).message)
+          : 'Cloudinary silme hatası';
+      throw new Error(errorMessage);
+    }
+  }
+
+  extractPublicIdFromUrl(url: string): string | null {
+    try {
+      const parts = url.split('/');
+      const folderAndFilename = parts.slice(-2).join('/');
+      const publicId = folderAndFilename.split('.')[0];
+      return publicId || null;
+    } catch {
+      return null;
+    }
+  }
 }

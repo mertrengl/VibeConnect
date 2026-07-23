@@ -129,6 +129,19 @@ export class UsersService {
   }
 
   async removeAvatar(userId: string) {
+    const user = await this.prisma.users.findUnique({
+      where: { id: userId },
+      select: { avatar_url: true },
+    });
+
+    if (user?.avatar_url) {
+      const publicId = this.cloudinaryService.extractPublicIdFromUrl(
+        user.avatar_url,
+      );
+      if (publicId) {
+        await this.cloudinaryService.deleteFile(publicId).catch(() => null);
+      }
+    }
     return await this.prisma.users.update({
       where: { id: userId },
       data: { avatar_url: null },
