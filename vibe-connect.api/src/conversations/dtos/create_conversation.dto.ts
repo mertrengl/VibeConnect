@@ -3,12 +3,13 @@ import {
   ArrayUnique,
   IsArray,
   IsBoolean,
+  IsEnum,
   IsOptional,
   IsString,
   IsUUID,
   MaxLength,
-  IsEnum,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { GroupCategory } from '@prisma/client';
 
 export class CreateConversationDto {
@@ -24,10 +25,18 @@ export class CreateConversationDto {
 
   @IsBoolean()
   @IsOptional()
+  @Transform(
+    ({ obj, value }: { obj: Record<string, boolean>; value?: boolean }) =>
+      value ?? obj?.is_group,
+  )
   isGroup?: boolean;
 
   @IsBoolean()
   @IsOptional()
+  @Transform(
+    ({ obj, value }: { obj: Record<string, boolean>; value?: boolean }) =>
+      value ?? obj?.is_public,
+  )
   isPublic?: boolean;
 
   @IsOptional()
@@ -36,6 +45,6 @@ export class CreateConversationDto {
   description?: string;
 
   @IsOptional()
-  @IsEnum([GroupCategory], { message: 'Geçersiz grup kategorisi.' })
+  @IsEnum(GroupCategory, { message: 'Geçersiz grup kategorisi.' })
   category?: GroupCategory;
 }
