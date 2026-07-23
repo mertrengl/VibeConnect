@@ -127,6 +127,24 @@ export class MessagesGateway
   ) {
     this.server.to(conversationId).emit('reactionRemoved', data);
   }
+  @SubscribeMessage('changeStatus')
+  handleChangeStatus(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() payload: { status: userPresence },
+  ) {
+    const userId = client.data?.sub;
+    if (userId && payload?.status) {
+      this.activeUsers.set(userId, {
+        socketId: client.id,
+        status: payload.status,
+      });
+      this.server.emit('userStatusChanged', {
+        userId,
+        status: payload.status,
+      });
+    }
+  }
+
   @SubscribeMessage('ping')
   handlePing(
     @ConnectedSocket() client: AuthenticatedSocket,
