@@ -18,6 +18,7 @@ import { MarkAsReadDto } from './dtos/mark_as_read.dto';
 import { UpdateParticipantRoleDto } from './dtos/update_participant_role.dto';
 import { AddParticipantDto } from './dtos/add_participant.dto';
 import { GetPublicConversationsQueryDto } from './dtos/get_public_conversations_query.dto';
+import { GroupCategory } from '@prisma/client/edge';
 
 type AuthenticatedRequest = {
   user: {
@@ -67,6 +68,11 @@ export class ConversationsController {
       dto.q,
       dto.category,
     );
+  }
+
+  @Get('categories')
+  getcategories() {
+    return Object.values(GroupCategory);
   }
 
   @Get(':id')

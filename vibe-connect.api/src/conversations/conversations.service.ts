@@ -137,6 +137,11 @@ export class ConversationsService {
         name: displayName,
         isGroup: convo.is_group,
         created_at: convo.created_at,
+        category: convo.category,
+        description: convo.description,
+        last_message_at: convo.last_message_at,
+        participantCount: convo.participants.length + 1,
+        myRole: p.role,
         otherUser:
           !convo.is_group && convo.participants[0]
             ? convo.participants[0].users
