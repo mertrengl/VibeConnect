@@ -28,23 +28,26 @@ export class ConversationsService {
           'Bir kullanıcı konuşmaya yalnızca bir kez eklenebilir.',
         );
       }
-
       const existingUsers = await tx.users.findMany({
         where: {
           id: { in: allParticipantIds },
         },
         select: { id: true },
       });
-
       if (existingUsers.length !== allParticipantIds.length) {
         throw new NotFoundException(
           'Bir veya daha fazla kullanıcı bulunamadı.',
         );
       }
-
-      if (!dto.isGroup) {
+      const isGroupVal = dto.isGroup ?? dto.is_group ?? false;
+      const isPublicVal = dto.isPublic ?? dto.is_public ?? false;
+      if (isGroupVal && allParticipantIds.length < 3) {
+        throw new BadRequestException(
+          'Bir grup oluşturmak için kurucu dahil en az 3 katılımcı olmalıdır.',
+        );
+      }
+      if (!isGroupVal) {
         const [smallerId, largerId] = [userId, dto.participantIds[0]].sort();
-
         const existingDM = await tx.direct_messages_mapping.findUnique({
           where: {
             user1_id_user2_id: {
@@ -81,15 +84,12 @@ export class ConversationsService {
         });
         return conversation;
       }
-      const isGroupVal = dto.isGroup ?? dto.is_group ?? true;
-      const isPublicVal = dto.isPublic ?? dto.is_public ?? false;
-
       const conversation = await tx.conversations.create({
         data: {
           name: dto.name,
           description: dto.description,
           category: dto.category ?? 'GENERAL',
-          is_group: isGroupVal,
+          is_group: true,
           is_public: isPublicVal,
         },
       });
@@ -97,10 +97,7 @@ export class ConversationsService {
         data: allParticipantIds.map((pId) => ({
           conversation_id: conversation.id,
           user_id: pId,
-          role:
-            isGroupVal && pId === userId
-              ? ParticipantRole.OWNER
-              : ParticipantRole.MEMBER,
+          role: pId === userId ? ParticipantRole.OWNER : ParticipantRole.MEMBER,
         })),
       });
       return conversation;
