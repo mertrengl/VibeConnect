@@ -35,6 +35,16 @@ enum GroupCategory {
   @@schema("vibeconnect")
 }
 
+enum MessageType {
+  TEXT
+  IMAGE
+  VIDEO
+  FILE
+
+  @@map("message_type")
+  @@schema("vibeconnect")
+}
+
 model conversations {
   id                      String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                    String?                   @db.VarChar(100)
@@ -81,7 +91,9 @@ model messages {
   id                   String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   conversation_id      String              @db.Uuid
   sender_id            String              @db.Uuid
-  content              String
+  content              String              @default("")
+  type                 MessageType         @default(TEXT)
+  media_url            String?             @db.VarChar(500)
   created_at           DateTime            @default(now()) @db.Timestamptz(6)
   deleted_for_everyone Boolean             @default(false)
   message_deletions    message_deletions[]

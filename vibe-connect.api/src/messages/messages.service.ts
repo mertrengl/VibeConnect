@@ -4,6 +4,7 @@ import {
   NotFoundException,
   Inject,
   forwardRef,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMessageDto } from './dtos/create_message.dto';
@@ -13,6 +14,7 @@ import { GetMessagesQueryDto } from './dtos/get_messages_query.dto';
 import { DeleteMessageQueryDto } from './dtos/delete_message_query.dto';
 import { ToggleReactionDto } from './dtos/toggle_reaction.dto';
 import { MessagesGateway } from './messages.gateway';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class MessagesService {
@@ -20,6 +22,7 @@ export class MessagesService {
     private prisma: PrismaService,
     @Inject(forwardRef(() => MessagesGateway))
     private messagesGateway: MessagesGateway,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   async createMessage(dto: CreateMessageDto, userId: string) {
@@ -37,6 +40,17 @@ export class MessagesService {
         conversation_id: dto.conversationId,
         sender_id: userId,
         content: dto.content,
+        type: dto.type ?? 'TEXT',
+        media_url: dto.mediaUrl,
+      },
+      include: {
+        users: {
+          select: {
+            id: true,
+            username: true,
+            avatar_url: true,
+          },
+        },
       },
     });
     return message;
@@ -78,12 +92,13 @@ export class MessagesService {
           select: {
             id: true,
             username: true,
+            avatar_url: true,
           },
         },
         message_reactions: {
           include: {
             users: {
-              select: { id: true, username: true },
+              select: { id: true, username: true, avatar_url: true },
             },
           },
         },
@@ -250,7 +265,7 @@ export class MessagesService {
       },
       include: {
         users: {
-          select: { id: true, username: true },
+          select: { id: true, username: true, avatar_url: true },
         },
       },
     });
@@ -259,5 +274,17 @@ export class MessagesService {
       newReaction,
     );
     return { action: 'added', reaction: newReaction };
+  }
+  async uploadMedia(file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Dosya bulunamadı.');
+    }
+    const uploadResult = (await this.cloudinaryService.uploadFile(
+      file,
+      'vibeconnect_chat_media',
+    )) as Record<string, any>;
+    const mediaUrl = String(uploadResult.secure_url || uploadResult.url || '');
+    const isVideo = file.mimetype.startsWith('video/');
+    return { mediaUrl, type: isVideo ? 'VIDEO' : 'IMAGE' };
   }
 }

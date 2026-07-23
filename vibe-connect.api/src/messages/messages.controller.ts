@@ -9,6 +9,9 @@ import {
   UseGuards,
   Request,
   Query,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { MessagesService } from './messages.service';
 import { CreateMessageDto } from './dtos/create_message.dto';
@@ -18,7 +21,8 @@ import { Request as ExpressRequest } from 'express';
 import { GetMessagesQueryDto } from './dtos/get_messages_query.dto';
 import { DeleteMessageQueryDto } from './dtos/delete_message_query.dto';
 import { ToggleReactionDto } from './dtos/toggle_reaction.dto';
-
+import { FileInterceptor } from '@nestjs/platform-express';
+import 'multer';
 interface RequestWithUser extends ExpressRequest {
   user: {
     id: string;
@@ -38,6 +42,32 @@ export class MessagesController {
     return await this.messagesService.createMessage(dto, req.user.id);
   }
 
+  @Post('upload-media')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: {
+        fileSize: 50 * 1024 * 1024, // 50 MB
+      },
+      fileFilter: (req, file, callback) => {
+        if (
+          !file.mimetype.match(
+            /\/(jpg|jpeg|png|webp|gif|mp4|webm|quicktime|mov)$/,
+          )
+        ) {
+          return callback(
+            new BadRequestException(
+              'Geçersiz dosya türü. Sadece resim ve video dosyalarına izin verilir.',
+            ),
+            false,
+          );
+        }
+        callback(null, true);
+      },
+    }),
+  )
+  async uploadMedia(@UploadedFile() file: Express.Multer.File) {
+    return await this.messagesService.uploadMedia(file);
+  }
   @Get(':conversationId')
   async getConversationMessages(
     @Param('conversationId') conversationId: string,

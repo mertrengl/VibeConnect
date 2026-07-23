@@ -8,13 +8,15 @@ import 'multer';
 
 @Injectable()
 export class CloudinaryService {
-  async uploadImage(
+  async uploadFile(
     file: Express.Multer.File,
+    folderName: string = 'vibeconnect_media',
   ): Promise<UploadApiResponse | UploadApiErrorResponse> {
     return new Promise((resolve, reject) => {
       const upload = cloudinary.uploader.upload_stream(
         {
-          folder: 'vibeconnect_avatars',
+          folder: folderName,
+          resource_type: 'auto',
         },
         (error, result) => {
           if (error) {
@@ -25,7 +27,7 @@ export class CloudinaryService {
             return reject(new Error(errorMessage));
           }
           if (!result) {
-            return reject(new BadRequestException('Resim yüklenemedi.'));
+            return reject(new BadRequestException('Dosya yüklenemedi.'));
           }
           resolve(result);
         },
@@ -33,5 +35,10 @@ export class CloudinaryService {
 
       upload.end(file.buffer);
     });
+  }
+  async uploadImage(
+    file: Express.Multer.File,
+  ): Promise<UploadApiResponse | UploadApiErrorResponse> {
+    return this.uploadFile(file, 'vibeconnect_media');
   }
 }
