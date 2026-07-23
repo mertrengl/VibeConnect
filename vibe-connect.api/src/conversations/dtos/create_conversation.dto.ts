@@ -7,7 +7,9 @@ import {
   IsString,
   IsUUID,
   MaxLength,
+  IsEnum,
 } from 'class-validator';
+import { GroupCategory } from '@prisma/client';
 
 export class CreateConversationDto {
   @IsArray()
@@ -32,4 +34,8 @@ export class CreateConversationDto {
   @IsString()
   @MaxLength(255, { message: 'Açıklama en fazla 255 karakter olabilir.' })
   description?: string;
+
+  @IsOptional()
+  @IsEnum([GroupCategory], { message: 'Geçersiz grup kategorisi.' })
+  category?: GroupCategory;
 }

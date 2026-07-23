@@ -17,10 +17,29 @@ enum ParticipantRole {
   @@schema("vibeconnect")
 }
 
+enum GroupCategory {
+  GENERAL
+  GAMING
+  MUSIC
+  SOFTWARE
+  SPORTS
+  BOOKS
+  MOVIES
+  CHILL
+  ART
+  FOOD
+  TRAVEL
+  FITNESS
+
+  @@map("group_category")
+  @@schema("vibeconnect")
+}
+
 model conversations {
   id                      String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                    String?                   @db.VarChar(100)
   description             String?                   @db.VarChar(255)
+  category                GroupCategory             @default(GENERAL)
   is_group                Boolean                   @default(false)
   is_public               Boolean                   @default(false)
   created_at              DateTime                  @default(now()) @db.Timestamptz(6)

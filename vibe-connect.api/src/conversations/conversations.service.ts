@@ -5,7 +5,7 @@ import {
   ForbiddenException,
   ConflictException,
 } from '@nestjs/common';
-import { ParticipantRole } from '@prisma/client';
+import { GroupCategory, ParticipantRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateConversationDto } from './dtos/create_conversation.dto';
 import { MarkAsReadDto } from './dtos/mark_as_read.dto';
@@ -79,6 +79,8 @@ export class ConversationsService {
       const conversation = await tx.conversations.create({
         data: {
           name: dto.name,
+          description: dto.description,
+          category: dto.category ?? 'GENERAL',
           is_group: true,
           is_public: dto.isPublic ?? false,
         },
@@ -406,11 +408,16 @@ export class ConversationsService {
       },
     });
   }
-  async getPublicConversations(userId: string, query?: string) {
+  async getPublicConversations(
+    userId: string,
+    query?: string,
+    category?: GroupCategory,
+  ) {
     return await this.prisma.conversations.findMany({
       where: {
         is_group: true,
         is_public: true,
+        ...(category && { category }),
         ...(query && {
           OR: [
             { name: { contains: query, mode: 'insensitive' } },

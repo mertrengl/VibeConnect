@@ -62,7 +62,11 @@ export class ConversationsController {
     @Request() req: AuthenticatedRequest,
     @Query() dto: GetPublicConversationsQueryDto,
   ) {
-    return this.conversationService.getPublicConversations(req.user.id, dto.q);
+    return this.conversationService.getPublicConversations(
+      req.user.id,
+      dto.q,
+      dto.category,
+    );
   }
 
   @Get(':id')
