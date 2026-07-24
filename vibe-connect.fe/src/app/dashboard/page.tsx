@@ -1884,7 +1884,10 @@ function DashboardContent() {
                       </div>
                     ) : (
                       chatMessages.map((msg, idx) => {
-                        const isMe = msg.sender_id === user?.id || msg.users?.id === user?.id;
+                        const isMe =
+                          (msg.sender_id && user?.id && String(msg.sender_id) === String(user.id)) ||
+                          (msg.senderId && user?.id && String(msg.senderId) === String(user.id)) ||
+                          (msg.users?.id && user?.id && String(msg.users.id) === String(user.id));
                         const isPopoverOpen = activeReactionMsgId === msg.id;
                         const reactionsList = msg.message_reactions || [];
                         
