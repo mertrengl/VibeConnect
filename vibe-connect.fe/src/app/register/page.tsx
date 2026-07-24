@@ -1,13 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { LanguageToggle } from "@/i18n/LanguageToggle";
 import styles from "../auth.module.css";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { t, getErrorMessage } = useLanguage();
+
+  // Redirect to dashboard if user is already logged in
+  useEffect(() => {
+    const token = localStorage.getItem("vibe_token");
+    if (token) {
+      router.replace("/dashboard");
+    }
+  }, [router]);
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -65,11 +76,7 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          Array.isArray(data.message)
-            ? data.message.join(", ")
-            : data.message || "Kayıt olunurken bir hata oluştu."
-        );
+        throw new Error(getErrorMessage(data.code, Array.isArray(data.message) ? data.message.join(", ") : data.message));
       }
 
       setSuccess(true);
@@ -93,7 +100,10 @@ export default function RegisterPage() {
     <div className={styles.authContainer}>
       <div className={styles.ambientGlow}></div>
 
-      <div className={styles.registerCard}>
+      <div className={styles.registerCard} style={{ position: "relative" }}>
+        <div style={{ position: "absolute", top: 16, right: 16, zIndex: 10 }}>
+          <LanguageToggle />
+        </div>
         <div className={styles.registerHeader}>
           <div className={styles.registerLogoBox}>
             <Image

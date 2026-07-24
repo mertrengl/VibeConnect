@@ -1,19 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { LanguageToggle } from "@/i18n/LanguageToggle";
 import styles from "../auth.module.css";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t, getErrorMessage } = useLanguage();
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Redirect to dashboard if user is already logged in with Remember Me active
+  useEffect(() => {
+    const isRemembered = localStorage.getItem("vibe_remember_me") === "true";
+    const token = isRemembered
+      ? localStorage.getItem("vibe_token")
+      : sessionStorage.getItem("vibe_token");
+
+    if (token && isRemembered) {
+      router.replace("/dashboard");
+    }
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,13 +52,24 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Giriş yapılırken bir hata oluştu.");
+        throw new Error(getErrorMessage(data.code, data.message));
       }
 
       // Store JWT token and user info
       if (data.access_token) {
-        localStorage.setItem("vibe_token", data.access_token);
-        localStorage.setItem("vibe_user", JSON.stringify(data.user));
+        if (rememberMe) {
+          localStorage.setItem("vibe_token", data.access_token);
+          localStorage.setItem("vibe_user", JSON.stringify(data.user));
+          localStorage.setItem("vibe_remember_me", "true");
+          sessionStorage.removeItem("vibe_token");
+          sessionStorage.removeItem("vibe_user");
+        } else {
+          sessionStorage.setItem("vibe_token", data.access_token);
+          sessionStorage.setItem("vibe_user", JSON.stringify(data.user));
+          localStorage.removeItem("vibe_token");
+          localStorage.removeItem("vibe_user");
+          localStorage.removeItem("vibe_remember_me");
+        }
       }
 
       // Redirect to dashboard
@@ -63,7 +89,10 @@ export default function LoginPage() {
     <div className={styles.authContainer}>
       <div className={styles.ambientGlow}></div>
 
-      <div className={styles.authCard}>
+      <div className={styles.authCard} style={{ position: "relative" }}>
+        <div style={{ position: "absolute", top: 16, right: 16, zIndex: 10 }}>
+          <LanguageToggle />
+        </div>
         <div className={styles.header}>
           <div className={styles.logoBox}>
             <Image
