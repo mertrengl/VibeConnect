@@ -318,12 +318,3 @@ export class MessagesService {
     return { mediaUrl, type: isVideo ? 'VIDEO' : 'IMAGE' };
   }
 }
-    const uploadResult = (await this.cloudinaryService.uploadFile(
-      file,
-      'vibeconnect_chat_media',
-    )) as Record<string, any>;
-    const mediaUrl = String(uploadResult.secure_url || uploadResult.url || '');
-    const isVideo = file.mimetype.startsWith('video/');
-    return { mediaUrl, type: isVideo ? 'VIDEO' : 'IMAGE' };
-  }
-}
