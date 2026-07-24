@@ -643,8 +643,9 @@ function DashboardContent() {
         },
         body: JSON.stringify({
           conversationId: activeConversation.id,
-          content: messageText.trim(),
+          content: messageText.trim() || "",
           type: messageType,
+          mediaUrl: uploadedMediaUrl,
           media_url: uploadedMediaUrl,
         }),
       });
