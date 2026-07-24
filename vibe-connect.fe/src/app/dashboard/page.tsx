@@ -657,17 +657,17 @@ function DashboardContent() {
           uploadedMediaUrl = uploadData.mediaUrl || uploadData.media_url || uploadData.url;
           const isVideo = selectedMediaFile.type.startsWith("video/");
           messageType = isVideo ? "VIDEO" : "IMAGE";
+        } else {
+          console.error("Upload failed with status:", uploadRes.status);
+          return;
         }
       }
 
       const payload: Record<string, any> = {
         conversationId: activeConversation.id,
         type: messageType,
+        content: messageText.trim() || (selectedMediaFile ? "📷 Attachment" : ""),
       };
-
-      if (messageText.trim()) {
-        payload.content = messageText.trim();
-      }
 
       if (uploadedMediaUrl) {
         payload.mediaUrl = uploadedMediaUrl;
