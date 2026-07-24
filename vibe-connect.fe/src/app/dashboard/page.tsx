@@ -1907,7 +1907,15 @@ function DashboardContent() {
                         });
 
                         return (
-                          <div key={msg.id || idx} className={isMe ? styles.messageRowSelf : styles.messageRowOther}>
+                          <div
+                            key={msg.id || idx}
+                            className={isMe ? styles.messageRowSelf : styles.messageRowOther}
+                            style={{
+                              alignSelf: isMe ? "flex-end" : "flex-start",
+                              marginLeft: isMe ? "auto" : "0",
+                              marginRight: isMe ? "0" : "auto",
+                            }}
+                          >
                             <button className={styles.messageProfileTrigger} onClick={() => openUserProfile(msg.users || { username: "User" })} aria-label="View sender profile">
                               {msg.users?.avatar_url ? (
                                 <Image src={msg.users.avatar_url} alt="sender" width={32} height={32} style={{ borderRadius: "50%", objectFit: "cover" }} />
@@ -1954,19 +1962,19 @@ function DashboardContent() {
                                 {!isMe && <button className={styles.messageAuthorButton} onClick={() => openUserProfile(msg.users || { username: "User" })}>{msg.users?.username || "User"}</button>}
 
                                 {/* Render Media Attachment (Image or Video) */}
-                                {(msg.media_url || msg.mediaUrl) && (
-                                  <div style={{ margin: "6px 0", borderRadius: "10px", overflow: "hidden" }}>
-                                    {msg.type === "VIDEO" || (msg.media_url || msg.mediaUrl).match(/\.(mp4|webm|mov)$/i) ? (
+                                {(msg.media_url || msg.mediaUrl || msg.media) && (
+                                  <div style={{ margin: "6px 0", borderRadius: "10px", overflow: "hidden", minWidth: "120px", minHeight: "80px", background: "rgba(0,0,0,0.2)" }}>
+                                    {msg.type === "VIDEO" || String(msg.media_url || msg.mediaUrl || msg.media).match(/\.(mp4|webm|mov)$/i) ? (
                                       <video
-                                        src={msg.media_url || msg.mediaUrl}
+                                        src={msg.media_url || msg.mediaUrl || msg.media}
                                         controls
                                         style={{ maxWidth: "100%", maxHeight: "280px", borderRadius: "8px", display: "block" }}
                                       />
                                     ) : (
-                                      <a href={msg.media_url || msg.mediaUrl} target="_blank" rel="noopener noreferrer">
+                                      <a href={msg.media_url || msg.mediaUrl || msg.media} target="_blank" rel="noopener noreferrer">
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img
-                                          src={msg.media_url || msg.mediaUrl}
+                                          src={msg.media_url || msg.mediaUrl || msg.media}
                                           alt="Attachment"
                                           style={{ width: "100%", height: "auto", maxWidth: "320px", maxHeight: "280px", objectFit: "cover", borderRadius: "8px", display: "block" }}
                                         />
