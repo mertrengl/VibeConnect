@@ -1937,10 +1937,13 @@ function DashboardContent() {
                                 style={{
                                   background: isMe ? "linear-gradient(135deg, #a855f7, #6366f1)" : "rgba(255,255,255,0.08)",
                                   color: "#fff",
-                                  padding: "10px 14px",
-                                  borderRadius: isMe ? "16px 16px 2px 16px" : "16px 16px 16px 2px",
-                                  fontSize: "0.9rem",
+                                  padding: "10px 16px",
+                                  borderRadius: isMe ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+                                  fontSize: "0.92rem",
+                                  lineHeight: "1.45",
                                   boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                                  width: "fit-content",
+                                  wordBreak: "break-word",
                                 }}
                               >
                                 {!isMe && <button className={styles.messageAuthorButton} onClick={() => openUserProfile(msg.users || { username: "User" })}>{msg.users?.username || "User"}</button>}
@@ -1968,14 +1971,11 @@ function DashboardContent() {
                                   </div>
                                 )}
 
-                                {msg.content && (
-                                  <div style={{ display: "flex", alignItems: "baseline", gap: "12px", flexWrap: "wrap" }}>
-                                    <span style={{ wordBreak: "break-word" }}>{msg.content}</span>
-                                    <span style={{ fontSize: "0.65rem", opacity: 0.65, marginLeft: "auto" }}>
-                                      {msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Just now"}
-                                    </span>
-                                  </div>
-                                )}
+                                {msg.content && <span>{msg.content}</span>}
+
+                                <span style={{ fontSize: "0.65rem", opacity: 0.65, marginLeft: "10px", float: "right", marginTop: "4px" }}>
+                                  {msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Just now"}
+                                </span>
                               </div>
 
                               {/* Render Reaction Badges Below Message */}
