@@ -2082,7 +2082,7 @@ function DashboardContent() {
                         }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-                          <div style={{ position: "relative" }}>
+                          <div>
                             {item.avatar_url ? (
                               <Image src={item.avatar_url} alt={item.name} width={44} height={44} style={{ borderRadius: (activeTab as any) === "groups" ? "8px" : "50%", objectFit: "cover" }} />
                             ) : (
@@ -2090,14 +2090,19 @@ function DashboardContent() {
                                 {(activeTab as any) === "groups" ? "#" : item.name.charAt(0).toUpperCase()}
                               </div>
                             )}
-                            {!(item.is_group || (item as any).isGroup) && (item as any).otherUser?.id && (
-                              <span className={`${styles.statusDot} ${onlineUserIds.has((item as any).otherUser.id) ? styles.statusOnline : styles.statusOffline}`} style={{ position: "absolute", bottom: 1, right: 1, width: 10, height: 10, border: "2px solid var(--bg-surface-high)" }}></span>
-                            )}
                           </div>
                           <div>
-                            <h4 style={{ fontSize: "1.05rem", fontWeight: 600, color: "#fff", margin: 0 }}>
-                              {(activeTab as any) === "groups" ? `#${item.name}` : item.name}
-                            </h4>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <h4 style={{ fontSize: "1.05rem", fontWeight: 600, color: "#fff", margin: 0 }}>
+                                {(activeTab as any) === "groups" ? `#${item.name}` : item.name}
+                              </h4>
+                              {!(item.is_group || (item as any).isGroup) && (item as any).otherUser?.id && (
+                                <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.72rem", color: onlineUserIds.has((item as any).otherUser.id) ? "#4caf50" : "var(--color-on-surface-variant)", background: "rgba(255,255,255,0.05)", padding: "2px 8px", borderRadius: "12px" }}>
+                                  <span className={`${styles.statusDot} ${onlineUserIds.has((item as any).otherUser.id) ? styles.statusOnline : styles.statusOffline}`} style={{ position: "static", width: 7, height: 7, border: "none" }}></span>
+                                  <span>{onlineUserIds.has((item as any).otherUser.id) ? t("common.online") : t("common.offline")}</span>
+                                </div>
+                              )}
+                            </div>
                             <p style={{ fontSize: "0.82rem", color: "var(--color-on-surface-variant)", margin: "4px 0 0 0" }}>
                               {item.description || (item as any).otherUser?.bio || ((activeTab as any) === "groups" ? "Community group channel" : "Hey there! I am using Vibe Connect.")}
                             </p>
