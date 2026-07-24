@@ -13,6 +13,8 @@ import { AddParticipantDto } from './dtos/add_participant.dto';
 import { UpdateParticipantRoleDto } from './dtos/update_participant_role.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
+import { ErrorCodes } from '../common/constants/error_codes';
+
 @Injectable()
 export class ConversationsService {
   constructor(
@@ -24,30 +26,39 @@ export class ConversationsService {
     return await this.prisma.$transaction(async (tx) => {
       const allParticipantIds = [userId, ...dto.participantIds];
       if (new Set(allParticipantIds).size !== allParticipantIds.length) {
-        throw new BadRequestException(
-          'Bir kullanıcı konuşmaya yalnızca bir kez eklenebilir.',
-        );
+        throw new BadRequestException({
+          code: ErrorCodes.ALREADY_GROUP_PARTICIPANT,
+          message: 'Bir kullanıcı konuşmaya yalnızca bir kez eklenebilir.',
+        });
       }
+
       const existingUsers = await tx.users.findMany({
         where: {
           id: { in: allParticipantIds },
         },
         select: { id: true },
       });
+
       if (existingUsers.length !== allParticipantIds.length) {
-        throw new NotFoundException(
-          'Bir veya daha fazla kullanıcı bulunamadı.',
-        );
+        throw new NotFoundException({
+          code: ErrorCodes.USER_NOT_FOUND,
+          message: 'Bir veya daha fazla kullanıcı bulunamadı.',
+        });
       }
+
       const isGroupVal = dto.isGroup ?? dto.is_group ?? false;
       const isPublicVal = dto.isPublic ?? dto.is_public ?? false;
+
       if (isGroupVal && allParticipantIds.length < 3) {
-        throw new BadRequestException(
-          'Bir grup oluşturmak için kurucu dahil en az 3 katılımcı olmalıdır.',
-        );
+        throw new BadRequestException({
+          code: ErrorCodes.GROUP_MIN_PARTICIPANTS_REQUIRED,
+          message: 'Bir grup oluşturmak için kurucu dahil en az 3 katılımcı olmalıdır.',
+        });
       }
+
       if (!isGroupVal) {
         const [smallerId, largerId] = [userId, dto.participantIds[0]].sort();
+
         const existingDM = await tx.direct_messages_mapping.findUnique({
           where: {
             user1_id_user2_id: {
@@ -84,6 +95,7 @@ export class ConversationsService {
         });
         return conversation;
       }
+
       const conversation = await tx.conversations.create({
         data: {
           name: dto.name,
@@ -185,9 +197,10 @@ export class ConversationsService {
     });
 
     if (!participant) {
-      throw new NotFoundException(
-        'Kullanıcı bu konuşmanın bir katılımcısı değil.',
-      );
+      throw new NotFoundException({
+        code: ErrorCodes.NOT_CONVERSATION_PARTICIPANT,
+        message: 'Kullanıcı bu konuşmanın bir katılımcısı değil.',
+      });
     }
     return await this.prisma.participants.update({
       where: {
@@ -215,15 +228,19 @@ export class ConversationsService {
       },
     });
     if (!conversation) {
-      throw new NotFoundException('Konuşma bulunamadı.');
+      throw new NotFoundException({
+        code: ErrorCodes.CONVERSATION_NOT_FOUND,
+        message: 'Konuşma bulunamadı.',
+      });
     }
     const isParticipant = conversation.participants.some(
       (p) => p.user_id === userId,
     );
     if (!isParticipant) {
-      throw new NotFoundException(
-        'Kullanıcı bu konuşmanın bir katılımcısı değil.',
-      );
+      throw new NotFoundException({
+        code: ErrorCodes.NOT_CONVERSATION_PARTICIPANT,
+        message: 'Kullanıcı bu konuşmanın bir katılımcısı değil.',
+      });
     }
     return conversation;
   }
@@ -238,11 +255,17 @@ export class ConversationsService {
     });
 
     if (!conversation) {
-      throw new NotFoundException('Konuşma bulunamadı.');
+      throw new NotFoundException({
+        code: ErrorCodes.CONVERSATION_NOT_FOUND,
+        message: 'Konuşma bulunamadı.',
+      });
     }
 
     if (!conversation.is_group) {
-      throw new BadRequestException('Bu konuşma bir grup konuşması değil.');
+      throw new BadRequestException({
+        code: ErrorCodes.NOT_GROUP_CONVERSATION,
+        message: 'Bu konuşma bir grup konuşması değil.',
+      });
     }
 
     const currentParticipant = await this.prisma.participants.findUnique({
@@ -258,9 +281,10 @@ export class ConversationsService {
       !currentParticipant ||
       currentParticipant.role === ParticipantRole.MEMBER
     ) {
-      throw new BadRequestException(
-        'Bu işlemi gerçekleştirmek için yeterli yetkiniz yok.',
-      );
+      throw new BadRequestException({
+        code: ErrorCodes.INSUFFICIENT_PERMISSIONS,
+        message: 'Bu işlemi gerçekleştirmek için yeterli yetkiniz yok.',
+      });
     }
 
     const targetUser = await this.prisma.users.findUnique({
@@ -268,7 +292,10 @@ export class ConversationsService {
     });
 
     if (!targetUser) {
-      throw new NotFoundException('Hedef kullanıcı bulunamadı.');
+      throw new NotFoundException({
+        code: ErrorCodes.USER_NOT_FOUND,
+        message: 'Hedef kullanıcı bulunamadı.',
+      });
     }
 
     const existingParticipant = await this.prisma.participants.findUnique({
@@ -281,7 +308,10 @@ export class ConversationsService {
     });
 
     if (existingParticipant) {
-      throw new BadRequestException('Kullanıcı zaten konuşmada mevcut.');
+      throw new BadRequestException({
+        code: ErrorCodes.ALREADY_GROUP_PARTICIPANT,
+        message: 'Kullanıcı zaten konuşmada mevcut.',
+      });
     }
 
     return await this.prisma.participants.create({
@@ -308,7 +338,10 @@ export class ConversationsService {
     });
 
     if (!conversation || !conversation.is_group) {
-      throw new BadRequestException('Geçersiz konuşma.');
+      throw new BadRequestException({
+        code: ErrorCodes.NOT_GROUP_CONVERSATION,
+        message: 'Geçersiz konuşma.',
+      });
     }
 
     const currentParticipant = await this.prisma.participants.findUnique({
@@ -330,25 +363,30 @@ export class ConversationsService {
     });
 
     if (!currentParticipant || !targetParticipant) {
-      throw new NotFoundException('Katılımcı bulunamadı.');
+      throw new NotFoundException({
+        code: ErrorCodes.NOT_CONVERSATION_PARTICIPANT,
+        message: 'Katılımcı bulunamadı.',
+      });
     }
 
     const isSelf = currentUserId === targetUserId;
 
     if (!isSelf) {
       if (currentParticipant.role === ParticipantRole.MEMBER) {
-        throw new ForbiddenException(
-          'Bu işlemi gerçekleştirmek için yeterli yetkiniz yok.',
-        );
+        throw new ForbiddenException({
+          code: ErrorCodes.INSUFFICIENT_PERMISSIONS,
+          message: 'Bu işlemi gerçekleştirmek için yeterli yetkiniz yok.',
+        });
       }
 
       if (
         currentParticipant.role === ParticipantRole.ADMIN &&
         targetParticipant.role !== ParticipantRole.MEMBER
       ) {
-        throw new ForbiddenException(
-          'Bir yönetici yalnızca normal üyeleri konuşmadan çıkarabilir.',
-        );
+        throw new ForbiddenException({
+          code: ErrorCodes.INSUFFICIENT_PERMISSIONS,
+          message: 'Bir yönetici yalnızca normal üyeleri konuşmadan çıkarabilir.',
+        });
       }
     }
 
@@ -373,7 +411,10 @@ export class ConversationsService {
     });
 
     if (!conversation || !conversation.is_group) {
-      throw new BadRequestException('Geçersiz grup konuşması.');
+      throw new BadRequestException({
+        code: ErrorCodes.NOT_GROUP_CONVERSATION,
+        message: 'Geçersiz grup konuşması.',
+      });
     }
 
     const currentParticipant = await this.prisma.participants.findUnique({
@@ -389,9 +430,10 @@ export class ConversationsService {
       !currentParticipant ||
       currentParticipant.role !== ParticipantRole.OWNER
     ) {
-      throw new ForbiddenException(
-        'Sadece grup sahibi üye rollerini değiştirebilir.',
-      );
+      throw new ForbiddenException({
+        code: ErrorCodes.INSUFFICIENT_PERMISSIONS,
+        message: 'Sadece grup sahibi üye rollerini değiştirebilir.',
+      });
     }
 
     const targetParticipant = await this.prisma.participants.findUnique({
@@ -404,7 +446,10 @@ export class ConversationsService {
     });
 
     if (!targetParticipant) {
-      throw new NotFoundException('Hedef kullanıcı grupta bulunamadı.');
+      throw new NotFoundException({
+        code: ErrorCodes.NOT_CONVERSATION_PARTICIPANT,
+        message: 'Hedef kullanıcı grupta bulunamadı.',
+      });
     }
 
     return await this.prisma.participants.update({
@@ -460,10 +505,16 @@ export class ConversationsService {
     });
 
     if (!conversation || !conversation.is_group) {
-      throw new NotFoundException('Grup bulunamadı.');
+      throw new NotFoundException({
+        code: ErrorCodes.CONVERSATION_NOT_FOUND,
+        message: 'Grup bulunamadı.',
+      });
     }
     if (!conversation.is_public) {
-      throw new ForbiddenException('Bu grup konuşması herkese açık değil.');
+      throw new ForbiddenException({
+        code: ErrorCodes.GROUP_NOT_PUBLIC,
+        message: 'Bu grup konuşması herkese açık değil.',
+      });
     }
     const existingParticipant = await this.prisma.participants.findUnique({
       where: {
@@ -475,7 +526,10 @@ export class ConversationsService {
     });
 
     if (existingParticipant) {
-      throw new ConflictException('Zaten bu gruba katılmışsınız.');
+      throw new ConflictException({
+        code: ErrorCodes.ALREADY_GROUP_PARTICIPANT,
+        message: 'Zaten bu gruba katılmışsınız.',
+      });
     }
 
     return await this.prisma.participants.create({
@@ -496,7 +550,10 @@ export class ConversationsService {
     });
 
     if (!conversation || !conversation.is_group) {
-      throw new NotFoundException('Grup bulunamadı.');
+      throw new NotFoundException({
+        code: ErrorCodes.CONVERSATION_NOT_FOUND,
+        message: 'Grup bulunamadı.',
+      });
     }
 
     const participant = await this.prisma.participants.findUnique({
@@ -509,7 +566,10 @@ export class ConversationsService {
     });
 
     if (!participant) {
-      throw new NotFoundException('Bu grubun bir üyesi değilsiniz.');
+      throw new NotFoundException({
+        code: ErrorCodes.NOT_CONVERSATION_PARTICIPANT,
+        message: 'Bu grubun bir üyesi değilsiniz.',
+      });
     }
 
     if (participant.role === ParticipantRole.OWNER) {
@@ -521,9 +581,10 @@ export class ConversationsService {
       });
 
       if (otherParticipantsCount > 0) {
-        throw new BadRequestException(
-          'Grup sahibi gruptan ayrılamaz. Önce sahipliği devretmeli veya grubu silmelisiniz.',
-        );
+        throw new BadRequestException({
+          code: ErrorCodes.CANNOT_LEAVE_AS_OWNER,
+          message: 'Grup sahibi gruptan ayrılamaz. Önce sahipliği devretmeli veya grubu silmelisiniz.',
+        });
       }
 
       return await this.prisma.conversations.delete({
@@ -547,14 +608,20 @@ export class ConversationsService {
     file: Express.Multer.File,
   ) {
     if (!file) {
-      throw new BadRequestException('Avatar dosyası sağlanmadı.');
+      throw new BadRequestException({
+        code: ErrorCodes.FILE_REQUIRED,
+        message: 'Avatar dosyası sağlanmadı.',
+      });
     }
     const conversation = await this.prisma.conversations.findUnique({
       where: { id: conversationId },
     });
 
     if (!conversation || !conversation.is_group) {
-      throw new BadRequestException('Geçersiz grup konuşması.');
+      throw new BadRequestException({
+        code: ErrorCodes.NOT_GROUP_CONVERSATION,
+        message: 'Geçersiz grup konuşması.',
+      });
     }
 
     const currentParticipant = await this.prisma.participants.findUnique({
@@ -570,9 +637,10 @@ export class ConversationsService {
       !currentParticipant ||
       currentParticipant.role === ParticipantRole.MEMBER
     ) {
-      throw new ForbiddenException(
-        'Bu işlemi gerçekleştirmek için yeterli yetkiniz yok.',
-      );
+      throw new ForbiddenException({
+        code: ErrorCodes.INSUFFICIENT_PERMISSIONS,
+        message: 'Bu işlemi gerçekleştirmek için yeterli yetkiniz yok.',
+      });
     }
 
     const uploadResult = (await this.cloudinaryService.uploadFile(
@@ -594,7 +662,10 @@ export class ConversationsService {
     });
 
     if (!conversation || !conversation.is_group) {
-      throw new BadRequestException('Geçersiz grup konuşması.');
+      throw new BadRequestException({
+        code: ErrorCodes.NOT_GROUP_CONVERSATION,
+        message: 'Geçersiz grup konuşması.',
+      });
     }
 
     const currentParticipant = await this.prisma.participants.findUnique({
@@ -610,12 +681,18 @@ export class ConversationsService {
       !currentParticipant ||
       currentParticipant.role === ParticipantRole.MEMBER
     ) {
-      throw new ForbiddenException(
-        'Bu işlemi gerçekleştirmek için yeterli yetkiniz yok.',
-      );
+      throw new ForbiddenException({
+        code: ErrorCodes.INSUFFICIENT_PERMISSIONS,
+        message: 'Bu işlemi gerçekleştirmek için yeterli yetkiniz yok.',
+      });
     }
 
     return await this.prisma.conversations.update({
+      where: { id: conversationId },
+      data: { avatar_url: null },
+    });
+  }
+}a.conversations.update({
       where: { id: conversationId },
       data: { avatar_url: null },
     });

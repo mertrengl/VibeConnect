@@ -12,6 +12,8 @@ import { ChangePasswordDto } from './dtos/change_password.dto';
 import * as bcrypt from 'bcrypt';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
+import { ErrorCodes } from '../common/constants/error_codes';
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -55,7 +57,10 @@ export class UsersService {
       },
     });
     if (!user) {
-      throw new NotFoundException('Kullanıcı bulunamadı.');
+      throw new NotFoundException({
+        code: ErrorCodes.USER_NOT_FOUND,
+        message: 'Kullanıcı bulunamadı.',
+      });
     }
     return user;
   }
@@ -79,9 +84,10 @@ export class UsersService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'
       ) {
-        throw new ConflictException(
-          'Kullanıcı adı veya e-posta zaten kullanımda.',
-        );
+        throw new ConflictException({
+          code: ErrorCodes.USER_ALREADY_EXISTS,
+          message: 'Kullanıcı adı veya e-posta zaten kullanımda.',
+        });
       }
       throw error;
     }
@@ -94,11 +100,17 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException('Kullanıcı bulunamadı.');
+      throw new NotFoundException({
+        code: ErrorCodes.USER_NOT_FOUND,
+        message: 'Kullanıcı bulunamadı.',
+      });
     }
     const isMatch = await bcrypt.compare(dto.oldPassword, user.password_hash);
     if (!isMatch) {
-      throw new UnauthorizedException('Eski şifre yanlış.');
+      throw new UnauthorizedException({
+        code: ErrorCodes.OLD_PASSWORD_INCORRECT,
+        message: 'Eski şifre yanlış.',
+      });
     }
     const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
 
@@ -111,7 +123,10 @@ export class UsersService {
   }
   async updateAvatar(userId: string, file: Express.Multer.File) {
     if (!file) {
-      throw new BadRequestException('Dosya bulunamadı.');
+      throw new BadRequestException({
+        code: ErrorCodes.FILE_REQUIRED,
+        message: 'Dosya bulunamadı.',
+      });
     }
     const uploadResult = await this.cloudinaryService.uploadImage(file);
     const imageUrl = (uploadResult.secure_url || uploadResult.url) as string;

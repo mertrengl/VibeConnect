@@ -16,6 +16,8 @@ import { ToggleReactionDto } from './dtos/toggle_reaction.dto';
 import { MessagesGateway } from './messages.gateway';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
+import { ErrorCodes } from '../common/constants/error_codes';
+
 @Injectable()
 export class MessagesService {
   constructor(
@@ -33,7 +35,10 @@ export class MessagesService {
       },
     });
     if (!isParticipant) {
-      throw new ForbiddenException('Bu konuşmaya mesaj gönderme yetkiniz yok.');
+      throw new ForbiddenException({
+        code: ErrorCodes.NOT_CONVERSATION_PARTICIPANT,
+        message: 'Bu konuşmaya mesaj gönderme yetkiniz yok.',
+      });
     }
     const message = await this.prisma.messages.create({
       data: {
@@ -68,7 +73,10 @@ export class MessagesService {
       },
     });
     if (!isParticipant) {
-      throw new ForbiddenException('Bu konuşmaya erişim yetkiniz yok.');
+      throw new ForbiddenException({
+        code: ErrorCodes.NOT_CONVERSATION_PARTICIPANT,
+        message: 'Bu konuşmaya erişim yetkiniz yok.',
+      });
     }
     return await this.prisma.messages.findMany({
       where: {
@@ -117,10 +125,16 @@ export class MessagesService {
       },
     });
     if (!message) {
-      throw new ForbiddenException('Mesaj bulunamadı.');
+      throw new NotFoundException({
+        code: ErrorCodes.MESSAGE_NOT_FOUND,
+        message: 'Mesaj bulunamadı.',
+      });
     }
     if (message.sender_id !== userId) {
-      throw new ForbiddenException('Bu mesajı güncelleme yetkiniz yok.');
+      throw new ForbiddenException({
+        code: ErrorCodes.CANNOT_EDIT_OTHERS_MESSAGE,
+        message: 'Bu mesajı güncelleme yetkiniz yok.',
+      });
     }
     const updatedMessage = await this.prisma.messages.update({
       where: {
@@ -148,7 +162,10 @@ export class MessagesService {
       },
     });
     if (!message) {
-      throw new NotFoundException('Mesaj bulunamadı.');
+      throw new NotFoundException({
+        code: ErrorCodes.MESSAGE_NOT_FOUND,
+        message: 'Mesaj bulunamadı.',
+      });
     }
     const isParticipant = await this.prisma.participants.findFirst({
       where: {
@@ -157,7 +174,10 @@ export class MessagesService {
       },
     });
     if (!isParticipant) {
-      throw new ForbiddenException('Bu konuşmaya erişim yetkiniz yok.');
+      throw new ForbiddenException({
+        code: ErrorCodes.NOT_CONVERSATION_PARTICIPANT,
+        message: 'Bu konuşmaya erişim yetkiniz yok.',
+      });
     }
 
     if (dto.forEveryone) {
@@ -166,9 +186,10 @@ export class MessagesService {
         isParticipant.role === ParticipantRole.ADMIN ||
         isParticipant.role === ParticipantRole.OWNER;
       if (!isSender && !isAdmin) {
-        throw new ForbiddenException(
-          'Bu mesajı herkes için silme yetkiniz yok.',
-        );
+        throw new ForbiddenException({
+          code: ErrorCodes.CANNOT_DELETE_OTHERS_MESSAGE,
+          message: 'Bu mesajı herkes için silme yetkiniz yok.',
+        });
       }
       const deletedMessage = await this.prisma.messages.delete({
         where: {
@@ -212,7 +233,10 @@ export class MessagesService {
       },
     });
     if (!message) {
-      throw new NotFoundException('Mesaj bulunamadı.');
+      throw new NotFoundException({
+        code: ErrorCodes.MESSAGE_NOT_FOUND,
+        message: 'Mesaj bulunamadı.',
+      });
     }
     const isParticipant = await this.prisma.participants.findFirst({
       where: {
@@ -221,7 +245,10 @@ export class MessagesService {
       },
     });
     if (!isParticipant) {
-      throw new ForbiddenException('Bu konuşmaya erişim yetkiniz yok.');
+      throw new ForbiddenException({
+        code: ErrorCodes.NOT_CONVERSATION_PARTICIPANT,
+        message: 'Bu konuşmaya erişim yetkiniz yok.',
+      });
     }
 
     const existingReaction = await this.prisma.message_reactions.findFirst({
@@ -277,8 +304,20 @@ export class MessagesService {
   }
   async uploadMedia(file: Express.Multer.File) {
     if (!file) {
-      throw new BadRequestException('Dosya bulunamadı.');
+      throw new BadRequestException({
+        code: ErrorCodes.FILE_REQUIRED,
+        message: 'Dosya bulunamadı.',
+      });
     }
+    const uploadResult = (await this.cloudinaryService.uploadFile(
+      file,
+      'vibeconnect_chat_media',
+    )) as Record<string, any>;
+    const mediaUrl = String(uploadResult.secure_url || uploadResult.url || '');
+    const isVideo = file.mimetype.startsWith('video/');
+    return { mediaUrl, type: isVideo ? 'VIDEO' : 'IMAGE' };
+  }
+}
     const uploadResult = (await this.cloudinaryService.uploadFile(
       file,
       'vibeconnect_chat_media',

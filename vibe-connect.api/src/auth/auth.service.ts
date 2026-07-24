@@ -10,6 +10,8 @@ import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dtos/login.dto';
 import { RegisterDto } from './dtos/register.dto';
 
+import { ErrorCodes } from '../common/constants/error_codes';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -27,7 +29,10 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new ConflictException('Kullanıcı adı veya email zaten mevcut.');
+      throw new ConflictException({
+        code: ErrorCodes.USER_ALREADY_EXISTS,
+        message: 'Kullanıcı adı veya email zaten mevcut.',
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -49,7 +54,10 @@ export class AuthService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'
       ) {
-        throw new ConflictException('Kullanıcı adı veya email zaten mevcut.');
+        throw new ConflictException({
+          code: ErrorCodes.USER_ALREADY_EXISTS,
+          message: 'Kullanıcı adı veya email zaten mevcut.',
+        });
       }
       throw error;
     }
@@ -65,16 +73,18 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException(
-        'Geçersiz kullanıcı bilgisi veya şifre girdiniz.',
-      );
+      throw new UnauthorizedException({
+        code: ErrorCodes.INVALID_CREDENTIALS,
+        message: 'Geçersiz kullanıcı bilgisi veya şifre girdiniz.',
+      });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
     if (!isPasswordValid) {
-      throw new UnauthorizedException(
-        'Geçersiz kullanıcı bilgisi veya şifre girdiniz.',
-      );
+      throw new UnauthorizedException({
+        code: ErrorCodes.INVALID_CREDENTIALS,
+        message: 'Geçersiz kullanıcı bilgisi veya şifre girdiniz.',
+      });
     }
 
     const payload = { sub: user.id, username: user.username };
