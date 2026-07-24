@@ -18,6 +18,17 @@ export default function RegisterPage() {
     if (token) {
       router.replace("/dashboard");
     }
+
+    // Intercept browser back button to redirect to landing (/)
+    window.history.pushState(null, "", window.location.href);
+    const handlePopState = () => {
+      router.replace("/");
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
   }, [router]);
 
   const [username, setUsername] = useState("");

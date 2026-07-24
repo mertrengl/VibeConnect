@@ -28,6 +28,17 @@ export default function LoginPage() {
     if (token && isRemembered) {
       router.replace("/dashboard");
     }
+
+    // Intercept browser back button to redirect to landing (/)
+    window.history.pushState(null, "", window.location.href);
+    const handlePopState = () => {
+      router.replace("/");
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
