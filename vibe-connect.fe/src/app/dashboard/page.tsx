@@ -653,7 +653,7 @@ function DashboardContent() {
 
         if (uploadRes.ok) {
           const uploadData = await uploadRes.json();
-          uploadedMediaUrl = uploadData.media_url || uploadData.url;
+          uploadedMediaUrl = uploadData.mediaUrl || uploadData.media_url || uploadData.url;
           const isVideo = selectedMediaFile.type.startsWith("video/");
           messageType = isVideo ? "VIDEO" : "IMAGE";
         }
@@ -1959,12 +1959,11 @@ function DashboardContent() {
                                       />
                                     ) : (
                                       <a href={msg.media_url || msg.mediaUrl} target="_blank" rel="noopener noreferrer">
-                                        <Image
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
                                           src={msg.media_url || msg.mediaUrl}
                                           alt="Attachment"
-                                          width={320}
-                                          height={240}
-                                          style={{ width: "100%", height: "auto", maxHeight: "280px", objectFit: "cover", borderRadius: "8px" }}
+                                          style={{ width: "100%", height: "auto", maxWidth: "320px", maxHeight: "280px", objectFit: "cover", borderRadius: "8px", display: "block" }}
                                         />
                                       </a>
                                     )}
