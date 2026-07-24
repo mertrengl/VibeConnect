@@ -1476,7 +1476,13 @@ function DashboardContent() {
                 <div className={styles.profileName}>{user?.username || "Alex Rivera"}</div>
                 <div className={styles.profileStatus}>
                   <span>
-                    {userStatus === "ONLINE" ? "Online" : userStatus === "AWAY" ? "Away" : "Busy"}
+                    {userStatus === "ONLINE"
+                      ? t("common.online")
+                      : userStatus === "AWAY"
+                      ? t("common.away")
+                      : userStatus === "BUSY"
+                      ? t("common.busy")
+                      : t("common.offline")}
                   </span>
                 </div>
               </div>
@@ -2082,7 +2088,7 @@ function DashboardContent() {
                               </div>
                             )}
                             {!(item.is_group || (item as any).isGroup) && (item as any).otherUser?.id && (
-                              <span className={`${styles.statusDot} ${onlineUserIds.has((item as any).otherUser.id) ? styles.statusOnline : styles.statusOffline}`} style={{ position: "absolute", bottom: 2, right: 2, border: "2px solid var(--bg-surface-high)" }}></span>
+                              <span className={onlineUserIds.has((item as any).otherUser.id) ? styles.onlineBadgeDot : styles.offlineBadgeDot} style={{ bottom: 0, right: 0, width: 11, height: 11, border: "2px solid var(--bg-surface-high)" }} title={onlineUserIds.has((item as any).otherUser.id) ? t("common.online") : t("common.offline")}></span>
                             )}
                           </div>
                           <div>
