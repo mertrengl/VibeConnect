@@ -413,6 +413,7 @@ function DashboardContent() {
   const fetchUserConversations = async () => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
     if (!token) return;
+    setLoadingChannels(true);
 
     try {
       const res = await fetch(`${apiUrl}/conversations`, {
@@ -430,6 +431,8 @@ function DashboardContent() {
       }
     } catch (err) {
       console.error("Failed to fetch user conversations", err);
+    } finally {
+      setLoadingChannels(false);
     }
   };
 
@@ -2053,8 +2056,8 @@ function DashboardContent() {
                     )}
                   </form>
                 </div>
-              ) : activeTab === "channels" && loadingChannels ? (
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "#c084fc", padding: "20px 0", fontSize: "0.95rem", fontWeight: 500 }}>
+              ) : loadingChannels ? (
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "#c084fc", padding: "40px 0", fontSize: "0.95rem", fontWeight: 500, justifyContent: "center" }}>
                   <svg className={styles.spinnerIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: "spin 1s linear infinite" }}>
                     <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
                   </svg>
