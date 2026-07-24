@@ -2082,7 +2082,7 @@ function DashboardContent() {
                         }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-                          <div style={{ position: "relative" }}>
+                          <div style={{ position: "relative", width: 44, height: 44, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
                             {item.avatar_url ? (
                               <Image src={item.avatar_url} alt={item.name} width={44} height={44} style={{ borderRadius: (activeTab as any) === "groups" ? "8px" : "50%", objectFit: "cover" }} />
                             ) : (
@@ -2091,7 +2091,7 @@ function DashboardContent() {
                               </div>
                             )}
                             {!(item.is_group || (item as any).isGroup) && (item as any).otherUser?.id && (
-                              <span className={onlineUserIds.has((item as any).otherUser.id) ? styles.onlineBadgeDot : styles.offlineBadgeDot} style={{ bottom: 0, right: 0, width: 11, height: 11, border: "2px solid var(--bg-surface-high)" }} title={onlineUserIds.has((item as any).otherUser.id) ? t("common.online") : t("common.offline")}></span>
+                              <span className={onlineUserIds.has((item as any).otherUser.id) ? styles.onlineBadgeDot : styles.offlineBadgeDot} style={{ bottom: -2, right: -2, width: 12, height: 12, border: "2px solid #18181b" }} title={onlineUserIds.has((item as any).otherUser.id) ? t("common.online") : t("common.offline")}></span>
                             )}
                           </div>
                           <div>
