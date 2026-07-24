@@ -76,26 +76,26 @@ export const enTranslations: TranslationKeys = {
   // News / Release Notes Page
   news: {
     title: "Release Notes & Product News",
-    subtitle: "All features, security updates, and improvements shipped to VibeConnect over the past week.",
+    subtitle: "All features, security updates, and system improvements shipped to VibeConnect over the past week.",
     backToHome: "Back to Home",
     latestBadge: "LATEST RELEASE",
     date1: "July 24, 2026",
-    v2Title: "🚀 VibeConnect v2.0.0 — Global i18n & Security Release",
-    v2_feat1: "🌐 Global i18n Support: Full Turkish and English language switching across all pages, modals, and backend error codes.",
-    v2_feat2: "🔒 URL Security Guard: Unauthorized chat link tampering is strictly blocked, redirecting unauthenticated users home.",
+    v2Title: "🚀 VibeConnect v2.0.0 — Multi-Language & Security Release",
+    v2_feat1: "🌐 Global Multi-Language Support: Full Turkish and English language switching across all pages, modals, and system notifications.",
+    v2_feat2: "🔒 Enhanced Link Guard: Unauthorized conversation and room link access is restricted with automatic secure redirection.",
     v2_feat3: "✍️ Character Counter & User Bio: Enforced 255 character limit on chat messages and customizable user bio profiles.",
-    v2_feat4: "🟢 Real-time Online Indicator: Live online/offline status indicators in DM list items and user profile popups.",
+    v2_feat4: "🟢 Live Presence Indicators: Live online/offline status indicators in DM list items and user profile cards.",
     
     date2: "July 22, 2026",
-    v1_5Title: "📷 Media Messaging & Cloudinary Asset Cleanup",
-    v1_5_feat1: "🖼️ In-Chat Media Attachments: Image and video upload previews enabled directly within chat rooms.",
-    v1_5_feat2: "🧹 Automated Cloud Cleanup: Automatic Cloudinary file destruction when avatars or assets are updated or removed.",
-    v1_5_feat3: "👥 Group Participant Management: Rich group details, leave group controls, and owner privilege checks added.",
+    v1_5Title: "📷 Media Messaging & Cloud Storage Management",
+    v1_5_feat1: "🖼️ Rich Media Attachments: Image and video upload previews enabled directly within chat rooms.",
+    v1_5_feat2: "🧹 Automated Cloud Asset Cleanup: Automatic removal of old avatar assets from cloud storage when updated.",
+    v1_5_feat3: "👥 Group Participant Management: Rich group management tools, member leave controls, and owner privilege checks added.",
 
     date3: "July 19, 2026",
-    v1_0Title: "⚡ VibeConnect v1.0 — Bento Grid & Categorized Lounges",
-    v1_0_feat1: "🎮 Topic Lounges: 12 curated categories (Software, Gaming, Music, Movies, Sports) with custom bento grid design.",
-    v1_0_feat2: "💬 Discord-Style Dual View Chat: Real-time Socket.io messaging seamlessly connecting channels, DMs, and Groups.",
+    v1_0Title: "⚡ VibeConnect v1.0 — Custom Layout & Categorized Lounges",
+    v1_0_feat1: "🎮 Topic Lounges: 12 curated categories (Software, Gaming, Music, Movies, Sports) with modern bento grid design.",
+    v1_0_feat2: "💬 Dual-Pane Chat Workspace: Real-time high-speed messaging seamlessly connecting channels, private messages, and groups.",
   },
 
   // Auth Pages
