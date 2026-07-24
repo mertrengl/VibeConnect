@@ -478,7 +478,7 @@ function DashboardContent() {
         const otherUser = (conv as any).otherUser;
         setActiveMembers(otherUser ? [otherUser] : [{ username: normalizedConversation.name }]);
       }
-      const res = await fetch(`${apiUrl}/conversations/${conv.id}/messages`, {
+      const res = await fetch(`${apiUrl}/messages/${conv.id}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
