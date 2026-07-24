@@ -247,6 +247,7 @@ function DashboardContent() {
   const [userConversations, setUserConversations] = useState<PublicChannel[]>([]);
   const [loadingChannels, setLoadingChannels] = useState(false);
   const [errorChannels, setErrorChannels] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Active Chat Room State
   const [activeConversation, setActiveConversation] = useState<PublicChannel | null>(null);
@@ -1367,14 +1368,14 @@ function DashboardContent() {
                 <div className={styles.dropdownEmail}>{user?.email || "alex@vibeconnect.com"}</div>
               </div>
 
-              <div className={styles.dropdownSectionTitle}>Set Status</div>
+              <div className={styles.dropdownSectionTitle}>{t("modals.setStatus")}</div>
 
               <button
                 onClick={() => { updatePresenceStatus("ONLINE"); setShowProfileMenu(false); }}
                 className={`${styles.statusOption} ${userStatus === "ONLINE" ? styles.statusOptionActive : ""}`}
               >
                 <span className={`${styles.statusDot} ${styles.statusOnline}`} style={{ position: "relative", inset: "auto" }}></span>
-                <span>Online</span>
+                <span>{t("common.online")}</span>
               </button>
 
               <button
@@ -1382,7 +1383,7 @@ function DashboardContent() {
                 className={`${styles.statusOption} ${userStatus === "AWAY" ? styles.statusOptionActive : ""}`}
               >
                 <span className={`${styles.statusDot} ${styles.statusAway}`} style={{ position: "relative", inset: "auto" }}></span>
-                <span>Away</span>
+                <span>{t("common.away")}</span>
               </button>
 
               <button
@@ -1390,7 +1391,7 @@ function DashboardContent() {
                 className={`${styles.statusOption} ${userStatus === "BUSY" ? styles.statusOptionActive : ""}`}
               >
                 <span className={`${styles.statusDot} ${styles.statusBusy}`} style={{ position: "relative", inset: "auto" }}></span>
-                <span>Busy</span>
+                <span>{t("common.busy")}</span>
               </button>
 
               <button
@@ -1398,7 +1399,7 @@ function DashboardContent() {
                 className={`${styles.statusOption} ${userStatus === "OFFLINE" ? styles.statusOptionActive : ""}`}
               >
                 <span className={`${styles.statusDot} ${styles.statusOffline}`} style={{ position: "relative", inset: "auto" }}></span>
-                <span>Invisible (Çevrimdışı Görün)</span>
+                <span>{t("common.invisible")}</span>
               </button>
 
               <div className={styles.dropdownDivider}></div>
@@ -1416,7 +1417,7 @@ function DashboardContent() {
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span>Profile Settings</span>
+                <span>{t("common.profileSettings")}</span>
               </button>
 
               {/* Security Item inside Dropdown */}
@@ -1432,7 +1433,7 @@ function DashboardContent() {
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
-                <span>Security & Credentials</span>
+                <span>{t("common.securityCredentials")}</span>
               </button>
 
               <div className={styles.dropdownDivider}></div>
@@ -1443,7 +1444,7 @@ function DashboardContent() {
                   <polyline points="16 17 21 12 16 7"></polyline>
                   <line x1="21" y1="12" x2="9" y2="12"></line>
                 </svg>
-                <span>Log Out</span>
+                <span>{t("common.logOut")}</span>
               </button>
             </div>
           )}
@@ -1727,31 +1728,51 @@ function DashboardContent() {
             /* Public Servers / Bento Grid View */
             <>
               {/* List views keep their context header; an opened conversation replaces it completely. */}
-              {!activeConversation && (activeTab === "channels" || activeTab === "messages" || activeTab === "groups") && <div className={styles.pageHeader}>
-                <div>
-                  <h3 className={styles.pageTitle}>
-                    {activeTab === "channels"
-                      ? t("dashboard.exploreCommunitiesTitle")
-                      : activeTab === "groups"
-                      ? t("dashboard.myGroupsTitle")
-                      : t("dashboard.directMessagesTitle")}
-                  </h3>
-                  <p className={styles.pageSubtitle}>
-                    {activeTab === "channels"
-                      ? t("dashboard.exploreCommunitiesDesc")
-                      : activeTab === "groups"
-                      ? t("dashboard.myGroupsDesc")
-                      : t("dashboard.directMessagesDesc")}
-                  </p>
-                </div>
+              {!activeConversation && (activeTab === "channels" || activeTab === "messages" || activeTab === "groups") && (
+                <div className={styles.pageHeader}>
+                  <div>
+                    <h3 className={styles.pageTitle}>
+                      {activeTab === "channels"
+                        ? t("dashboard.exploreCommunitiesTitle")
+                        : activeTab === "groups"
+                        ? t("dashboard.myGroupsTitle")
+                        : t("dashboard.directMessagesTitle")}
+                    </h3>
+                    <p className={styles.pageSubtitle}>
+                      {activeTab === "channels"
+                        ? t("dashboard.exploreCommunitiesDesc")
+                        : activeTab === "groups"
+                        ? t("dashboard.myGroupsDesc")
+                        : t("dashboard.directMessagesDesc")}
+                    </p>
+                  </div>
 
-                <button className={styles.filterBtn} onClick={fetchPublicChannels}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
-                  </svg>
-                  <span>{t("common.refresh")}</span>
-                </button>
-              </div>}
+                  <button
+                    className={styles.filterBtn}
+                    onClick={() => {
+                      setRefreshing(true);
+                      fetchPublicChannels();
+                      fetchUserConversations();
+                      setTimeout(() => setRefreshing(false), 800);
+                    }}
+                  >
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      style={{
+                        animation: refreshing ? "spin 0.8s linear infinite" : "none",
+                      }}
+                    >
+                      <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                    </svg>
+                    <span>{t("common.refresh")}</span>
+                  </button>
+                </div>
+              )}
 
               {/* Category Filter Bar (Only visible in Explore Public Channels) */}
               {activeTab === "channels" && (
@@ -1801,7 +1822,7 @@ function DashboardContent() {
                           {activeConversation.is_group ? `#${activeConversation.name}` : activeConversation.name}
                         </div>
                         <div className={styles.conversationStatus}>
-                          {activeConversation.is_group ? "Group Channel" : <><span className={(activeConversation as any).otherUser?.id && onlineUserIds.has((activeConversation as any).otherUser.id) ? styles.statusOnline : styles.statusOffline}></span>{(activeConversation as any).otherUser?.id && onlineUserIds.has((activeConversation as any).otherUser.id) ? "Online" : "Offline"}</>}
+                          {activeConversation.is_group ? t("modals.groupChannel") : <><span className={(activeConversation as any).otherUser?.id && onlineUserIds.has((activeConversation as any).otherUser.id) ? styles.statusOnline : styles.statusOffline}></span>{(activeConversation as any).otherUser?.id && onlineUserIds.has((activeConversation as any).otherUser.id) ? t("common.online") : t("common.offline")}</>}
                         </div>
                       </div>
                     </div>
@@ -1809,13 +1830,13 @@ function DashboardContent() {
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                       </svg>
-                      {showMembers ? "Hide Members" : "Members"}
+                      {showMembers ? t("modals.hideMembers") : t("modals.showMembers")}
                     </button>}
                     <button
                       onClick={() => { setActiveConversation(null); updateConversationUrl(); }}
                       style={{ background: "rgba(255,255,255,0.06)", border: "none", color: "var(--color-on-surface-variant)", padding: "6px 12px", borderRadius: "6px", cursor: "pointer", fontSize: "0.78rem" }}
                     >
-                      Close Chat ✕
+                      {t("common.closeChat")} ✕
                     </button>
                   </div>
 
@@ -1823,12 +1844,12 @@ function DashboardContent() {
                   {/* Chat Messages Stream */}
                   <div className={styles.chatMessagesStream}>
                     {chatLoading ? (
-                      <div style={{ color: "#c084fc", textAlign: "center", margin: "auto", fontSize: "0.9rem" }}>Messages loading... 🚀</div>
+                      <div style={{ color: "#c084fc", textAlign: "center", margin: "auto", fontSize: "0.9rem" }}>{t("common.loadingMessages")} 🚀</div>
                     ) : chatMessages.length === 0 ? (
                       <div style={{ margin: "auto", textAlign: "center", color: "var(--color-on-surface-variant)" }}>
                         <div style={{ fontSize: "2rem", marginBottom: "8px" }}>👋</div>
-                        <div style={{ fontWeight: 600, color: "#fff" }}>No messages here yet!</div>
-                        <div style={{ fontSize: "0.8rem", marginTop: "4px" }}>Start the conversation by sending a message below.</div>
+                        <div style={{ fontWeight: 600, color: "#fff" }}>{t("common.noMessagesYet")}</div>
+                        <div style={{ fontSize: "0.8rem", marginTop: "4px" }}>{t("modals.startConversationPrompt")}</div>
                       </div>
                     ) : (
                       chatMessages.map((msg, idx) => {
@@ -1946,7 +1967,7 @@ function DashboardContent() {
 
                   {showMembers && activeConversation.is_group && (
                     <aside className={styles.memberPanel}>
-                      <div className={styles.memberPanelTitle}>MEMBERS — {activeMembers.length}</div>
+                      <div className={styles.memberPanelTitle}>{t("common.members")} — {activeMembers.length}</div>
                       {activeMembers.map((member) => (
                         <button key={member.id || member.username} className={styles.memberRow} onClick={() => openUserProfile(member)}>
                           <span className={styles.memberAvatar}>{member.username.charAt(0).toUpperCase()}</span>
@@ -2004,7 +2025,7 @@ function DashboardContent() {
                         maxLength={255}
                         value={messageText}
                         onChange={(e) => setMessageText(e.target.value)}
-                        placeholder={`Message ${activeConversation.is_group ? `#${activeConversation.name}` : activeConversation.name}...`}
+                        placeholder={`${t("common.messagePlaceholder")} (${activeConversation.is_group ? `#${activeConversation.name}` : activeConversation.name})...`}
                         style={{ flex: 1, background: "rgba(255,255,255,0.05)", border: "1px solid var(--color-border-subtle)", borderRadius: "8px", padding: "10px 14px", color: "#fff", outline: "none" }}
                       />
                       <button
@@ -2030,7 +2051,7 @@ function DashboardContent() {
                   <svg className={styles.spinnerIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: "spin 1s linear infinite" }}>
                     <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
                   </svg>
-                  <span>Loading conversations... 🚀</span>
+                  <span>{t("common.loadingConversations")} 🚀</span>
                 </div>
               ) : (activeTab as any) === "messages" || (activeTab as any) === "groups" ? (
                 /* Flat Clean Vertical List View for Direct Messages & My Groups */
@@ -2078,7 +2099,7 @@ function DashboardContent() {
                           className={styles.saveBtn}
                           style={{ marginTop: 0, padding: "8px 16px" }}
                         >
-                          {(activeTab as any) === "groups" ? "Enter Group" : "Open Chat"}
+                          {(activeTab as any) === "groups" ? t("dashboard.enterGroup") : t("dashboard.openChat")}
                         </button>
                       </div>
                     ))}
@@ -2128,17 +2149,17 @@ function DashboardContent() {
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                                     <circle cx="9" cy="7" r="4"></circle>
                                   </svg>
-                                  <span>{memberCount} members</span>
+                                  <span>{memberCount} {t("modals.membersOnline")}</span>
                                 </div>
                               </div>
                             </div>
                             {selectedCategory === "ALL" && channel.category && (
                               <span className={styles.tagBadge} style={{ marginLeft: "auto" }}>
-                                {CATEGORY_EMOJIS[channel.category] || "🏷️"} {channel.category}
+                                {CATEGORY_EMOJIS[channel.category] || "🏷️"} {t(`categories.${channel.category}`, channel.category)}
                               </span>
                             )}
                             {selectedCategory !== "ALL" && (
-                              <span className={styles.tagBadge}>🔥 Hot Community</span>
+                              <span className={styles.tagBadge}>{t("modals.hotCommunity")}</span>
                             )}
                           </div>
 
@@ -2156,7 +2177,7 @@ function DashboardContent() {
                                 border: isJoined ? "1px solid var(--color-border-subtle)" : "none",
                               }}
                             >
-                              {isJoined ? "Joined ✓" : "Join Server"}
+                              {isJoined ? t("modals.joined") : t("modals.joinServer")}
                             </button>
                           </div>
                         </div>
@@ -2187,11 +2208,11 @@ function DashboardContent() {
                           )}
                           <div style={{ flex: 1 }}>
                             <h4 className={styles.channelName} style={{ fontSize: "1.1rem" }}>#{channel.name}</h4>
-                            <div className={styles.channelMeta}>{memberCount} members online</div>
+                            <div className={styles.channelMeta}>{memberCount} {t("modals.membersOnline")}</div>
                           </div>
                           {selectedCategory === "ALL" && channel.category && (
                             <span className={styles.tagBadge}>
-                              {CATEGORY_EMOJIS[channel.category] || "🏷️"} {channel.category}
+                              {CATEGORY_EMOJIS[channel.category] || "🏷️"} {t(`categories.${channel.category}`, channel.category)}
                             </span>
                           )}
                         </div>
@@ -2206,7 +2227,7 @@ function DashboardContent() {
                             color: isJoined ? "var(--color-on-surface)" : "var(--color-primary)",
                           }}
                         >
-                          {isJoined ? "Joined ✓" : "Join Server"}
+                          {isJoined ? t("modals.joined") : t("modals.joinServer")}
                         </button>
                       </div>
                     );
@@ -2227,8 +2248,8 @@ function DashboardContent() {
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                       </svg>
                     </div>
-                    <div className={styles.createTitle}>Create Public Server</div>
-                    <div className={styles.createSubtitle}>Launch your own room & invite new friends</div>
+                    <div className={styles.createTitle}>{t("modals.createPublicServer")}</div>
+                    <div className={styles.createSubtitle}>{t("modals.createPublicServerDesc")}</div>
                   </div>
                 </div>
               )}
@@ -2243,8 +2264,8 @@ function DashboardContent() {
           <div className={styles.categoryModal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <div>
-                <h3 className={styles.modalTitle}>✨ What do you desire to talk about?</h3>
-                <p className={styles.modalSubtitle}>Pick a topic to filter servers and find people with shared interests</p>
+                <h3 className={styles.modalTitle}>{t("modals.topicModalTitle")}</h3>
+                <p className={styles.modalSubtitle}>{t("modals.topicModalDesc")}</p>
               </div>
               <button className={styles.modalCloseBtn} onClick={() => setShowCategoryModal(false)}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -2265,8 +2286,8 @@ function DashboardContent() {
               >
                 <span className={styles.modalEmoji}>🌐</span>
                 <div className={styles.modalCategoryInfo}>
-                  <div className={styles.modalCategoryName}>All Topics</div>
-                  <div className={styles.modalCategoryDesc}>Browse all public vibe communities</div>
+                  <div className={styles.modalCategoryName}>{t("dashboard.allTopics")}</div>
+                  <div className={styles.modalCategoryDesc}>{t("modals.browseAllCommunities")}</div>
                 </div>
               </button>
 
