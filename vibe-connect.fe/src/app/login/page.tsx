@@ -104,7 +104,7 @@ export default function LoginPage() {
             />
           </div>
           <h1 className={styles.title}>Vibe Connect</h1>
-          <p className={styles.subtitle}>Sign in to your workspace</p>
+          <p className={styles.subtitle}>{t("auth.subtitle")}</p>
         </div>
 
         {error && <div className={styles.errorMessage}>{error}</div>}
@@ -113,7 +113,7 @@ export default function LoginPage() {
           {/* Email / Username Field */}
           <div className={styles.inputGroup}>
             <div className={styles.labelRow}>
-              <label className={styles.label}>Email Address or Username</label>
+              <label className={styles.label}>{t("auth.emailOrUsername")}</label>
             </div>
             <div className={styles.inputWrapper}>
               <span className={styles.inputIcon}>
@@ -124,7 +124,7 @@ export default function LoginPage() {
               </span>
               <input
                 type="text"
-                placeholder="name@company.com or username"
+                placeholder="name@company.com"
                 value={usernameOrEmail}
                 onChange={(e) => setUsernameOrEmail(e.target.value)}
                 className={styles.input}
@@ -136,8 +136,7 @@ export default function LoginPage() {
           {/* Password Field */}
           <div className={styles.inputGroup}>
             <div className={styles.labelRow}>
-              <label className={styles.label}>Password</label>
-              <a href="#" className={styles.forgotLink}>Forgot?</a>
+              <label className={styles.label}>{t("auth.password")}</label>
             </div>
             <div className={styles.inputWrapper}>
               <span className={styles.inputIcon}>
@@ -185,7 +184,7 @@ export default function LoginPage() {
               className={styles.checkbox}
             />
             <label htmlFor="rememberMe" className={styles.checkboxLabel}>
-              Remember me on this device
+              {t("auth.rememberMe")}
             </label>
           </div>
 
@@ -196,10 +195,10 @@ export default function LoginPage() {
             className={styles.submitBtn}
           >
             {loading ? (
-              <span>Signing in...</span>
+              <span>{t("auth.signingIn")}</span>
             ) : (
               <>
-                <span>Login</span>
+                <span>{t("auth.loginBtn")}</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                   <polyline points="12 5 19 12 12 19"></polyline>
@@ -210,9 +209,9 @@ export default function LoginPage() {
         </form>
 
         <div className={styles.footerText}>
-          Don't have an account?
+          {t("auth.dontHaveAccount")}{" "}
           <Link href="/register" className={styles.footerLink}>
-            Request access
+            {t("auth.requestAccess")}
           </Link>
         </div>
       </div>

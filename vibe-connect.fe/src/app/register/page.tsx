@@ -115,7 +115,7 @@ export default function RegisterPage() {
             />
           </div>
           <h1 className={styles.registerTitle}>Vibe Connect</h1>
-          <p className={styles.subtitle}>Create your secure workspace account.</p>
+          <p className={styles.subtitle}>{t("auth.subtitle")}</p>
         </div>
 
         {error && <div className={styles.errorMessage}>{error}</div>}
@@ -128,7 +128,7 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className={styles.registerForm}>
           {/* Username Field */}
           <div className={styles.registerInputGroup}>
-            <label className={styles.label}>Username</label>
+            <label className={styles.label}>{t("auth.username")}</label>
             <div className={styles.inputWrapper}>
               <span className={styles.inputIcon}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -149,7 +149,7 @@ export default function RegisterPage() {
 
           {/* Email Field */}
           <div className={styles.registerInputGroup}>
-            <label className={styles.label}>Work Email</label>
+            <label className={styles.label}>{t("auth.email")}</label>
             <div className={styles.inputWrapper}>
               <span className={styles.inputIcon}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -170,7 +170,7 @@ export default function RegisterPage() {
 
           {/* Password Field */}
           <div className={styles.registerInputGroup}>
-            <label className={styles.label}>Password</label>
+            <label className={styles.label}>{t("auth.password")}</label>
             <div className={styles.inputWrapper}>
               <span className={styles.inputIcon}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -209,7 +209,7 @@ export default function RegisterPage() {
 
           {/* Confirm Password Field */}
           <div className={styles.registerInputGroup}>
-            <label className={styles.label}>Confirm Password</label>
+            <label className={styles.label}>{t("auth.confirmPassword")}</label>
             <div className={styles.inputWrapper}>
               <span className={styles.inputIcon}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -233,42 +233,42 @@ export default function RegisterPage() {
               <span className={`${styles.checkIcon} ${rules.min8Chars ? styles.checkIconPassed : styles.checkIconPending}`}>
                 {rules.min8Chars ? "✓" : "○"}
               </span>
-              <span>8+ characters</span>
+              <span>{t("auth.min8Chars")}</span>
             </div>
 
             <div className={`${styles.checkItem} ${rules.hasUppercase ? styles.checkItemPassed : ""}`}>
               <span className={`${styles.checkIcon} ${rules.hasUppercase ? styles.checkIconPassed : styles.checkIconPending}`}>
                 {rules.hasUppercase ? "✓" : "○"}
               </span>
-              <span>Uppercase (A-Z)</span>
+              <span>{t("auth.hasUppercase")}</span>
             </div>
 
             <div className={`${styles.checkItem} ${rules.hasLowercase ? styles.checkItemPassed : ""}`}>
               <span className={`${styles.checkIcon} ${rules.hasLowercase ? styles.checkIconPassed : styles.checkIconPending}`}>
                 {rules.hasLowercase ? "✓" : "○"}
               </span>
-              <span>Lowercase (a-z)</span>
+              <span>{t("auth.hasLowercase")}</span>
             </div>
 
             <div className={`${styles.checkItem} ${rules.hasNumber ? styles.checkItemPassed : ""}`}>
               <span className={`${styles.checkIcon} ${rules.hasNumber ? styles.checkIconPassed : styles.checkIconPending}`}>
                 {rules.hasNumber ? "✓" : "○"}
               </span>
-              <span>Number (0-9)</span>
+              <span>{t("auth.hasNumber")}</span>
             </div>
 
             <div className={`${styles.checkItem} ${rules.hasSymbol ? styles.checkItemPassed : ""}`}>
               <span className={`${styles.checkIcon} ${rules.hasSymbol ? styles.checkIconPassed : styles.checkIconPending}`}>
                 {rules.hasSymbol ? "✓" : "○"}
               </span>
-              <span>Special symbol (!@#)</span>
+              <span>{t("auth.hasSymbol")}</span>
             </div>
 
             <div className={`${styles.checkItem} ${rules.passwordsMatch ? styles.checkItemPassed : ""}`}>
               <span className={`${styles.checkIcon} ${rules.passwordsMatch ? styles.checkIconPassed : styles.checkIconPending}`}>
                 {rules.passwordsMatch ? "✓" : "○"}
               </span>
-              <span>Passwords match</span>
+              <span>{t("auth.passwordsMatch")}</span>
             </div>
           </div>
 
@@ -283,7 +283,7 @@ export default function RegisterPage() {
               required
             />
             <label htmlFor="terms" className={styles.checkboxLabel}>
-              I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+              {t("auth.agreeTerms")}
             </label>
           </div>
 
@@ -294,10 +294,10 @@ export default function RegisterPage() {
             className={styles.registerSubmitBtn}
           >
             {loading ? (
-              <span>Creating Account...</span>
+              <span>{t("auth.registering")}</span>
             ) : (
               <>
-                <span>Create Account</span>
+                <span>{t("auth.registerBtn")}</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                   <polyline points="12 5 19 12 12 19"></polyline>
@@ -308,9 +308,9 @@ export default function RegisterPage() {
         </form>
 
         <div className={styles.footerText} style={{ marginTop: 12 }}>
-          Already have an account?
+          {t("auth.alreadyHaveAccount")}{" "}
           <Link href="/login" className={styles.footerLink}>
-            Log In
+            {t("auth.loginBtn")}
           </Link>
         </div>
       </div>
