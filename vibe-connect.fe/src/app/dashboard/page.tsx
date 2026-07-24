@@ -248,7 +248,7 @@ function DashboardContent() {
   const [loadingChannels, setLoadingChannels] = useState(false);
   const [errorChannels, setErrorChannels] = useState<string | null>(null);
 
-  // Active Chat Room State (Discord Nested View)
+  // Active Chat Room State
   const [activeConversation, setActiveConversation] = useState<PublicChannel | null>(null);
   const [activeMembers, setActiveMembers] = useState<UserProfile[]>([]);
   const [showMembers, setShowMembers] = useState(false);
@@ -258,6 +258,15 @@ function DashboardContent() {
   const [chatLoading, setChatLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Media Upload State
+  const [selectedMediaFile, setSelectedMediaFile] = useState<File | null>(null);
+  const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Reactions Popover Hover/Click State
+  const [activeReactionMsgId, setActiveReactionMsgId] = useState<string | null>(null);
 
   // DM & Groups Pagination Limit State (Initial 5)
   const [dmLimit, setDmLimit] = useState(5);
@@ -337,6 +346,36 @@ function DashboardContent() {
           }
           return currentActive;
         });
+      });
+
+      socket.on("reactionAdded", (reaction: any) => {
+        setChatMessages((prevMessages) =>
+          prevMessages.map((msg) => {
+            if (msg.id === reaction.message_id || msg.id === reaction.messageId) {
+              const existingReactions = msg.message_reactions || [];
+              const filtered = existingReactions.filter(
+                (r: any) => !(r.user_id === reaction.user_id && r.emoji === reaction.emoji)
+              );
+              return { ...msg, message_reactions: [...filtered, reaction] };
+            }
+            return msg;
+          })
+        );
+      });
+
+      socket.on("reactionRemoved", (data: { messageId: string; userId: string; emoji: string }) => {
+        setChatMessages((prevMessages) =>
+          prevMessages.map((msg) => {
+            if (msg.id === data.messageId) {
+              const existingReactions = msg.message_reactions || [];
+              const filtered = existingReactions.filter(
+                (r: any) => !(r.user_id === data.userId && r.emoji === data.emoji)
+              );
+              return { ...msg, message_reactions: filtered };
+            }
+            return msg;
+          })
+        );
       });
     } else {
       // Strict Auth Guard: Redirect unauthenticated user to login immediately
@@ -533,15 +572,78 @@ function DashboardContent() {
     }
   };
 
-  // Send Message Handler
+  // File Selection Handler
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedMediaFile(file);
+      setMediaPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const handleRemoveMedia = () => {
+    setSelectedMediaFile(null);
+    setMediaPreviewUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  // Toggle Message Reaction Handler
+  const handleToggleReaction = async (messageId: string, emoji: string) => {
+    if (!token || !activeConversation) return;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+    try {
+      const res = await fetch(`${apiUrl}/messages/${messageId}/reactions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ emoji }),
+      });
+
+      if (res.ok) {
+        setActiveReactionMsgId(null);
+      }
+    } catch (err) {
+      console.error("Failed to toggle reaction", err);
+    }
+  };
+
+  // Send Message Handler (Supports Media Upload + Text)
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!messageText.trim() || !activeConversation || !token) return;
+    if ((!messageText.trim() && !selectedMediaFile) || !activeConversation || !token) return;
 
     setSendingMessage(true);
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
     try {
+      let uploadedMediaUrl: string | undefined = undefined;
+      let messageType: "TEXT" | "IMAGE" | "VIDEO" | "FILE" = "TEXT";
+
+      // Upload media if file selected
+      if (selectedMediaFile) {
+        setUploadingMedia(true);
+        const formData = new FormData();
+        formData.append("file", selectedMediaFile);
+
+        const uploadRes = await fetch(`${apiUrl}/messages/upload-media`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        });
+
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          uploadedMediaUrl = uploadData.media_url || uploadData.url;
+          const isVideo = selectedMediaFile.type.startsWith("video/");
+          messageType = isVideo ? "VIDEO" : "IMAGE";
+        }
+      }
+
       const res = await fetch(`${apiUrl}/messages`, {
         method: "POST",
         headers: {
@@ -551,6 +653,8 @@ function DashboardContent() {
         body: JSON.stringify({
           conversationId: activeConversation.id,
           content: messageText.trim(),
+          type: messageType,
+          media_url: uploadedMediaUrl,
         }),
       });
 
@@ -558,6 +662,7 @@ function DashboardContent() {
         const newMsg = await res.json();
         setChatMessages((prev) => [...prev, newMsg]);
         setMessageText("");
+        handleRemoveMedia();
         setTimeout(() => {
           messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
         }, 100);
@@ -566,6 +671,7 @@ function DashboardContent() {
       console.error("Failed to send message", e);
     } finally {
       setSendingMessage(false);
+      setUploadingMedia(false);
     }
   };
 
@@ -1737,23 +1843,109 @@ function DashboardContent() {
                     ) : (
                       chatMessages.map((msg, idx) => {
                         const isMe = msg.sender_id === user?.id || msg.users?.id === user?.id;
+                        const isPopoverOpen = activeReactionMsgId === msg.id;
+                        const reactionsList = msg.message_reactions || [];
+                        
+                        // Group reactions by emoji
+                        const groupedReactions: { [emoji: string]: { count: number; userIds: string[]; hasReacted: boolean } } = {};
+                        reactionsList.forEach((r: any) => {
+                          if (!groupedReactions[r.emoji]) {
+                            groupedReactions[r.emoji] = { count: 0, userIds: [], hasReacted: false };
+                          }
+                          groupedReactions[r.emoji].count += 1;
+                          groupedReactions[r.emoji].userIds.push(r.user_id);
+                          if (r.user_id === user?.id) {
+                            groupedReactions[r.emoji].hasReacted = true;
+                          }
+                        });
+
                         return (
                           <div key={msg.id || idx} className={isMe ? styles.messageRowSelf : styles.messageRowOther}>
                             <button className={styles.messageProfileTrigger} onClick={() => openUserProfile(msg.users || { username: "User" })} aria-label="View sender profile">
-                            {msg.users?.avatar_url ? (
-                              <Image src={msg.users.avatar_url} alt="sender" width={32} height={32} style={{ borderRadius: "50%", objectFit: "cover" }} />
-                            ) : (
-                              <div className={styles.sidebarSubAvatar} style={{ width: 32, height: 32, fontSize: "0.85rem" }}>
-                                {msg.users?.username ? msg.users.username.charAt(0).toUpperCase() : "U"}
-                              </div>
-                            )}
+                              {msg.users?.avatar_url ? (
+                                <Image src={msg.users.avatar_url} alt="sender" width={32} height={32} style={{ borderRadius: "50%", objectFit: "cover" }} />
+                              ) : (
+                                <div className={styles.sidebarSubAvatar} style={{ width: 32, height: 32, fontSize: "0.85rem" }}>
+                                  {msg.users?.username ? msg.users.username.charAt(0).toUpperCase() : "U"}
+                                </div>
+                              )}
                             </button>
-                            <div style={{ maxWidth: "65%", background: isMe ? "linear-gradient(135deg, #a855f7, #6366f1)" : "rgba(255,255,255,0.08)", color: "#fff", padding: "10px 14px", borderRadius: isMe ? "16px 16px 2px 16px" : "16px 16px 16px 2px", fontSize: "0.9rem", boxShadow: "0 2px 8px rgba(0,0,0,0.2)" }}>
-                              {!isMe && <button className={styles.messageAuthorButton} onClick={() => openUserProfile(msg.users || { username: "User" })}>{msg.users?.username || "User"}</button>}
-                              <div>{msg.content}</div>
-                              <div style={{ fontSize: "0.65rem", opacity: 0.7, textAlign: "right", marginTop: "4px" }}>
-                                {msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Just now"}
+
+                            <div className={styles.messageBubbleContainer} style={{ position: "relative" }}>
+                              {/* Quick Reaction Popover */}
+                              {isPopoverOpen && (
+                                <div className={`${styles.reactionPickerPopover} ${isMe ? styles.reactionPickerSelf : styles.reactionPickerOther}`}>
+                                  {["❤️", "👍", "🔥", "😂", "🚀", "😮"].map((emoji) => (
+                                    <button
+                                      key={emoji}
+                                      className={styles.emojiBtn}
+                                      onClick={() => handleToggleReaction(msg.id, emoji)}
+                                    >
+                                      {emoji}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+
+                              <div
+                                onMouseEnter={() => setActiveReactionMsgId(msg.id)}
+                                onMouseLeave={() => setActiveReactionMsgId(null)}
+                                style={{
+                                  background: isMe ? "linear-gradient(135deg, #a855f7, #6366f1)" : "rgba(255,255,255,0.08)",
+                                  color: "#fff",
+                                  padding: "10px 14px",
+                                  borderRadius: isMe ? "16px 16px 2px 16px" : "16px 16px 16px 2px",
+                                  fontSize: "0.9rem",
+                                  boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                                }}
+                              >
+                                {!isMe && <button className={styles.messageAuthorButton} onClick={() => openUserProfile(msg.users || { username: "User" })}>{msg.users?.username || "User"}</button>}
+
+                                {/* Render Media Attachment (Image or Video) */}
+                                {(msg.media_url || msg.mediaUrl) && (
+                                  <div style={{ margin: "6px 0", borderRadius: "10px", overflow: "hidden" }}>
+                                    {msg.type === "VIDEO" || (msg.media_url || msg.mediaUrl).match(/\.(mp4|webm|mov)$/i) ? (
+                                      <video
+                                        src={msg.media_url || msg.mediaUrl}
+                                        controls
+                                        style={{ maxWidth: "100%", maxHeight: "280px", borderRadius: "8px", display: "block" }}
+                                      />
+                                    ) : (
+                                      <a href={msg.media_url || msg.mediaUrl} target="_blank" rel="noopener noreferrer">
+                                        <Image
+                                          src={msg.media_url || msg.mediaUrl}
+                                          alt="Attachment"
+                                          width={320}
+                                          height={240}
+                                          style={{ width: "100%", height: "auto", maxHeight: "280px", objectFit: "cover", borderRadius: "8px" }}
+                                        />
+                                      </a>
+                                    )}
+                                  </div>
+                                )}
+
+                                {msg.content && <div>{msg.content}</div>}
+
+                                <div style={{ fontSize: "0.65rem", opacity: 0.7, textAlign: "right", marginTop: "4px" }}>
+                                  {msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Just now"}
+                                </div>
                               </div>
+
+                              {/* Render Reaction Badges Below Message */}
+                              {Object.keys(groupedReactions).length > 0 && (
+                                <div className={styles.reactionsContainer}>
+                                  {Object.entries(groupedReactions).map(([emoji, data]) => (
+                                    <button
+                                      key={emoji}
+                                      onClick={() => handleToggleReaction(msg.id, emoji)}
+                                      className={`${styles.reactionChip} ${data.hasReacted ? styles.reactionChipActive : ""}`}
+                                    >
+                                      <span>{emoji}</span>
+                                      <span>{data.count}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           </div>
                         );
@@ -1776,9 +1968,47 @@ function DashboardContent() {
                   )}
                   </div>
 
-                  {/* Chat Input Bar Form with 255 Char Limit */}
+                  {/* Chat Input Bar Form with Media Upload Button & Preview */}
                   <form onSubmit={handleSendMessage} style={{ display: "flex", flexDirection: "column", gap: "6px", padding: "12px 20px", background: "var(--bg-surface-high)", borderTop: "1px solid var(--color-border-subtle)" }}>
+                    {/* Media File Selected Preview */}
+                    {selectedMediaFile && (
+                      <div className={styles.mediaPreviewBox}>
+                        {selectedMediaFile.type.startsWith("image/") && mediaPreviewUrl ? (
+                          <Image src={mediaPreviewUrl} alt="preview" width={40} height={40} className={styles.mediaPreviewThumb} />
+                        ) : (
+                          <div style={{ fontSize: "1.2rem" }}>🎥</div>
+                        )}
+                        <div style={{ fontSize: "0.82rem", color: "#fff", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {selectedMediaFile.name} ({(selectedMediaFile.size / (1024 * 1024)).toFixed(1)} MB)
+                        </div>
+                        <button type="button" onClick={handleRemoveMedia} className={styles.mediaRemoveBtn}>
+                          ✕
+                        </button>
+                      </div>
+                    )}
+
                     <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                      {/* File Input Trigger */}
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileSelect}
+                        accept="image/*,video/*"
+                        style={{ display: "none" }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className={styles.mediaUploadBtn}
+                        title="Upload Image or Video"
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                          <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                      </button>
+
                       <input
                         type="text"
                         maxLength={255}
@@ -1789,11 +2019,11 @@ function DashboardContent() {
                       />
                       <button
                         type="submit"
-                        disabled={sendingMessage || !messageText.trim() || messageText.length > 255}
+                        disabled={sendingMessage || uploadingMedia || (!messageText.trim() && !selectedMediaFile) || messageText.length > 255}
                         className={styles.saveBtn}
                         style={{ marginTop: 0, padding: "8px 20px" }}
                       >
-                        {sendingMessage ? t("common.sending") : t("common.send")}
+                        {sendingMessage || uploadingMedia ? t("common.sending") : t("common.send")}
                       </button>
                     </div>
                     {messageText.length > 0 && (

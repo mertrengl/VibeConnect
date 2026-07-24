@@ -1980,6 +1980,7 @@
   align-items: flex-end;
   animation: messagePopSelf 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transform-origin: bottom right;
+  position: relative;
 }
 
 .messageRowOther {
@@ -1989,5 +1990,140 @@
   align-items: flex-end;
   animation: messagePopOther 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transform-origin: bottom left;
+  position: relative;
+}
+
+/* Reactions Bar & Quick Emoji Picker */
+.messageBubbleContainer {
+  position: relative;
+  maxWidth: 65%;
+}
+
+.reactionPickerPopover {
+  position: absolute;
+  top: -38px;
+  background: var(--bg-surface-popover, #252525);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 20px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  z-index: 10;
+  animation: popIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reactionPickerSelf {
+  right: 0;
+}
+
+.reactionPickerOther {
+  left: 0;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.emojiBtn {
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  padding: 2px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.emojiBtn:hover {
+  transform: scale(1.3);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.reactionsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.reactionChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--color-on-surface);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.reactionChip:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(168, 85, 247, 0.5);
+}
+
+.reactionChipActive {
+  background: rgba(168, 85, 247, 0.25);
+  border-color: rgba(192, 132, 252, 0.6);
+  color: #d8b4fe;
+  font-weight: 700;
+}
+
+.mediaUploadBtn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 8px;
+  color: var(--color-on-surface-variant);
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.mediaUploadBtn:hover {
+  background: rgba(168, 85, 247, 0.15);
+  border-color: rgba(168, 85, 247, 0.4);
+  color: #fff;
+}
+
+.mediaPreviewBox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+.mediaPreviewThumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.mediaRemoveBtn {
+  background: transparent;
+  border: none;
+  color: #ff4949;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-left: auto;
 }
 
