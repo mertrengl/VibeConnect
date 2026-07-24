@@ -671,7 +671,6 @@ function DashboardContent() {
 
       if (uploadedMediaUrl) {
         payload.mediaUrl = uploadedMediaUrl;
-        payload.media_url = uploadedMediaUrl;
       }
 
       const res = await fetch(`${apiUrl}/messages`, {
@@ -691,6 +690,9 @@ function DashboardContent() {
         setTimeout(() => {
           messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
         }, 100);
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        console.error("Message send failed [400]:", errJson);
       }
     } catch (e) {
       console.error("Failed to send message", e);
