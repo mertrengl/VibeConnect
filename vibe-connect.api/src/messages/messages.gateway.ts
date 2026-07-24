@@ -34,7 +34,9 @@ interface RoomPayload {
 
 interface SendMessagePayload {
   conversationId: string;
-  content: string;
+  content?: string;
+  type?: 'TEXT' | 'IMAGE' | 'VIDEO' | 'FILE';
+  mediaUrl?: string;
 }
 
 @WebSocketGateway({
@@ -194,7 +196,12 @@ export class MessagesGateway
   ) {
     try {
       const message = await this.messagesService.createMessage(
-        { conversationId: payload.conversationId, content: payload.content },
+        {
+          conversationId: payload.conversationId,
+          content: payload.content,
+          type: payload.type,
+          mediaUrl: payload.mediaUrl,
+        },
         client.data.sub,
       );
       this.server.to(payload.conversationId).emit('newMessage', message);

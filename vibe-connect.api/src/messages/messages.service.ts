@@ -58,6 +58,7 @@ export class MessagesService {
         },
       },
     });
+    this.messagesGateway.server.to(dto.conversationId).emit('newMessage', message);
     return message;
   }
 
