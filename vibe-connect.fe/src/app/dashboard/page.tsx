@@ -426,6 +426,7 @@ function DashboardContent() {
 
   // Fetch Categories & Channels when token or activeTab changes
   useEffect(() => {
+    if (!token) return;
     fetchCategories();
     fetchPublicChannels();
     fetchUserConversations();
@@ -659,19 +660,27 @@ function DashboardContent() {
         }
       }
 
+      const payload: Record<string, any> = {
+        conversationId: activeConversation.id,
+        type: messageType,
+      };
+
+      if (messageText.trim()) {
+        payload.content = messageText.trim();
+      }
+
+      if (uploadedMediaUrl) {
+        payload.mediaUrl = uploadedMediaUrl;
+        payload.media_url = uploadedMediaUrl;
+      }
+
       const res = await fetch(`${apiUrl}/messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          conversationId: activeConversation.id,
-          content: messageText.trim() || "",
-          type: messageType,
-          mediaUrl: uploadedMediaUrl,
-          media_url: uploadedMediaUrl,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
