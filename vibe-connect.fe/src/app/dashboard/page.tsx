@@ -258,6 +258,8 @@ function DashboardContent() {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [chatLoading, setChatLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [typingUser, setTypingUser] = useState<string | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Media Upload State
@@ -344,6 +346,25 @@ function DashboardContent() {
             setTimeout(() => {
               messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
             }, 100);
+          }
+          return currentActive;
+        });
+      });
+
+      socket.on("userTyping", (data: { userId: string; username?: string; conversationId: string }) => {
+        setActiveConversation((currentActive) => {
+          if (currentActive && currentActive.id === data.conversationId && data.userId !== user?.id) {
+            setTypingUser(data.username || "Birisi");
+            setTimeout(() => setTypingUser(null), 3000);
+          }
+          return currentActive;
+        });
+      });
+
+      socket.on("userStopTyping", (data: { userId: string; conversationId: string }) => {
+        setActiveConversation((currentActive) => {
+          if (currentActive && currentActive.id === data.conversationId) {
+            setTypingUser(null);
           }
           return currentActive;
         });
@@ -1972,6 +1993,16 @@ function DashboardContent() {
                         );
                       })
                     )}
+                    {typingUser && (
+                      <div className={styles.typingContainer}>
+                        <span style={{ fontSize: "0.78rem", color: "#c084fc", fontWeight: 600 }}>{typingUser} yazıyor</span>
+                        <div className={styles.typingDots}>
+                          <span className={styles.typingDot}></span>
+                          <span className={styles.typingDot}></span>
+                          <span className={styles.typingDot}></span>
+                        </div>
+                      </div>
+                    )}
                     <div ref={messagesEndRef} />
                   </div>
 
@@ -2034,7 +2065,25 @@ function DashboardContent() {
                         type="text"
                         maxLength={255}
                         value={messageText}
-                        onChange={(e) => setMessageText(e.target.value)}
+                        onChange={(e) => {
+                          setMessageText(e.target.value);
+                          if (socketRef.current && activeConversation) {
+                            socketRef.current.emit("typing", {
+                              conversationId: activeConversation.id,
+                              userId: user?.id,
+                              username: user?.username,
+                            });
+                            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+                            typingTimeoutRef.current = setTimeout(() => {
+                              if (socketRef.current && activeConversation) {
+                                socketRef.current.emit("stopTyping", {
+                                  conversationId: activeConversation.id,
+                                  userId: user?.id,
+                                });
+                              }
+                            }, 2000);
+                          }
+                        }}
                         placeholder={`${t("common.messagePlaceholder")} (${activeConversation.is_group ? `#${activeConversation.name}` : activeConversation.name})...`}
                         style={{ flex: 1, background: "rgba(255,255,255,0.05)", border: "1px solid var(--color-border-subtle)", borderRadius: "8px", padding: "10px 14px", color: "#fff", outline: "none" }}
                       />
