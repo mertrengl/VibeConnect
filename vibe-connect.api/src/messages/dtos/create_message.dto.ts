@@ -13,8 +13,8 @@ export class CreateMessageDto {
   conversationId!: string;
 
   @IsString()
-  @IsNotEmpty()
-  content!: string;
+  @IsOptional()
+  content?: string;
 
   @IsOptional()
   @IsEnum(MessageType, { message: 'Geçerli bir mesaj tipi seçin' })

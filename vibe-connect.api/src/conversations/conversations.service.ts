@@ -692,9 +692,4 @@ export class ConversationsService {
       data: { avatar_url: null },
     });
   }
-}a.conversations.update({
-      where: { id: conversationId },
-      data: { avatar_url: null },
-    });
-  }
 }
