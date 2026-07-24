@@ -487,13 +487,8 @@ function DashboardContent() {
         setTimeout(() => {
           messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
         }, 100);
-      } else if (res.status === 401 || res.status === 403 || res.status === 404) {
-        // Security Guard: Unauthorized or illegal conversation access attempt.
-        // Immediately kick user to landing page (/)
-        setActiveConversation(null);
-        updateUrlParams(undefined, undefined, undefined, true);
-        router.replace("/");
-        return;
+      } else {
+        console.warn("Could not load messages for conversation:", res.status);
       }
     } catch (e) {
       console.error("Failed to load conversation messages", e);
@@ -502,7 +497,7 @@ function DashboardContent() {
     }
   };
 
-  // Restore a conversation directly from the URL and strictly validate membership against backend API
+  // Restore a conversation directly from the URL
   useEffect(() => {
     if (!token) return;
     const conversationId = searchParams.get("conversation");
@@ -518,11 +513,6 @@ function DashboardContent() {
         setActiveTab(isGroup ? "groups" : "messages");
         handleSelectConversation(conversation);
       }
-    } else if (userConversations.length > 0) {
-      // User typed or pasted a conversation ID in the URL that they DO NOT belong to or is invalid.
-      // Security Action: Clear URL parameter and kick unauthorized attempt to Landing page (/)
-      updateUrlParams(undefined, undefined, undefined, true);
-      router.replace("/");
     }
   }, [token, userConversations, searchParams]);
 
