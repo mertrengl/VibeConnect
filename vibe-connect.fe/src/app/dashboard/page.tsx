@@ -195,7 +195,7 @@ function DashboardContent() {
     }
 
     const queryStr = params.toString() ? `?${params.toString()}` : "";
-    router.replace(`${pathname}${queryStr}`, { scroll: false });
+    router.push(`${pathname}${queryStr}`, { scroll: false });
   };
 
   const updateConversationUrl = (conversationId?: string) => {
@@ -203,7 +203,7 @@ function DashboardContent() {
     if (conversationId) params.set("conversation", conversationId);
     else params.delete("conversation");
     const queryStr = params.toString() ? `?${params.toString()}` : "";
-    router.replace(`${pathname}${queryStr}`, { scroll: false });
+    router.push(`${pathname}${queryStr}`, { scroll: false });
   };
   
   // New Conversation Modal State (Group / DM)
