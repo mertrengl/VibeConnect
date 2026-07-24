@@ -28,7 +28,7 @@ export default function Home() {
           <div className={styles.navLinks}>
             <a href="#features" className={styles.navLink}>{t("landing.features")}</a>
             <a href="#about" className={styles.navLink}>{t("landing.about")}</a>
-            <a href="#updates" className={styles.navLink}>{t("landing.updates")}</a>
+            <Link href="/news" className={styles.navLink}>{t("landing.updates")}</Link>
           </div>
 
           <div className={styles.navActions}>
@@ -240,31 +240,6 @@ export default function Home() {
           </div>
           <div style={{ maxWidth: "800px", margin: "0 auto", textAlign: "center", padding: "24px 32px", background: "rgba(255,255,255,0.03)", borderRadius: "16px", border: "1px solid var(--color-border-subtle)", color: "var(--color-on-surface-variant)", lineHeight: 1.7, fontSize: "1.05rem" }}>
             {t("landing.aboutSectionDesc")}
-          </div>
-        </section>
-
-        {/* Release Notes & Updates Section */}
-        <section id="updates" className={styles.featuresSection} style={{ borderTop: "1px solid var(--color-border-subtle)" }}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>{t("landing.updatesSectionTitle")}</h2>
-            <p className={styles.sectionSubtitle}>
-              {t("landing.updatesSectionSubtitle")}
-            </p>
-          </div>
-
-          <div className={styles.featuresGrid}>
-            <div className={styles.featureCard}>
-              <h3 className={styles.featureTitle}>{t("landing.update1Title")}</h3>
-              <p className={styles.featureDesc}>{t("landing.update1Desc")}</p>
-            </div>
-            <div className={styles.featureCard}>
-              <h3 className={styles.featureTitle}>{t("landing.update2Title")}</h3>
-              <p className={styles.featureDesc}>{t("landing.update2Desc")}</p>
-            </div>
-            <div className={styles.featureCard}>
-              <h3 className={styles.featureTitle}>{t("landing.update3Title")}</h3>
-              <p className={styles.featureDesc}>{t("landing.update3Desc")}</p>
-            </div>
           </div>
         </section>
 

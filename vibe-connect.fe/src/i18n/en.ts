@@ -73,6 +73,31 @@ export const enTranslations: TranslationKeys = {
     copyright: "© 2026 VibeConnect Inc. All rights reserved.",
   },
 
+  // News / Release Notes Page
+  news: {
+    title: "Release Notes & Product News",
+    subtitle: "All features, security updates, and improvements shipped to VibeConnect over the past week.",
+    backToHome: "Back to Home",
+    latestBadge: "LATEST RELEASE",
+    date1: "July 24, 2026",
+    v2Title: "🚀 VibeConnect v2.0.0 — Global i18n & Security Release",
+    v2_feat1: "🌐 Global i18n Support: Full Turkish and English language switching across all pages, modals, and backend error codes.",
+    v2_feat2: "🔒 URL Security Guard: Unauthorized chat link tampering is strictly blocked, redirecting unauthenticated users home.",
+    v2_feat3: "✍️ Character Counter & User Bio: Enforced 255 character limit on chat messages and customizable user bio profiles.",
+    v2_feat4: "🟢 Real-time Online Indicator: Live online/offline status indicators in DM list items and user profile popups.",
+    
+    date2: "July 22, 2026",
+    v1_5Title: "📷 Media Messaging & Cloudinary Asset Cleanup",
+    v1_5_feat1: "🖼️ In-Chat Media Attachments: Image and video upload previews enabled directly within chat rooms.",
+    v1_5_feat2: "🧹 Automated Cloud Cleanup: Automatic Cloudinary file destruction when avatars or assets are updated or removed.",
+    v1_5_feat3: "👥 Group Participant Management: Rich group details, leave group controls, and owner privilege checks added.",
+
+    date3: "July 19, 2026",
+    v1_0Title: "⚡ VibeConnect v1.0 — Bento Grid & Categorized Lounges",
+    v1_0_feat1: "🎮 Topic Lounges: 12 curated categories (Software, Gaming, Music, Movies, Sports) with custom bento grid design.",
+    v1_0_feat2: "💬 Discord-Style Dual View Chat: Real-time Socket.io messaging seamlessly connecting channels, DMs, and Groups.",
+  },
+
   // Auth Pages
   auth: {
     loginTitle: "Sign in to your workspace",

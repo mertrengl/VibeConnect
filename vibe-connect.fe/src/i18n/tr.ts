@@ -71,6 +71,31 @@ export const trTranslations = {
     copyright: "© 2026 VibeConnect Inc. Tüm hakları saklıdır.",
   },
 
+  // News / Release Notes Page
+  news: {
+    title: "Güncelleme Notları & Sürüm Haberleri",
+    subtitle: "VibeConnect'e eklenen son 1 haftalık tüm özellikler, güvenlik güncellemeleri ve hata düzeltmeleri.",
+    backToHome: "Ana Sayfaya Dön",
+    latestBadge: "EN YENİ SÜRÜM",
+    date1: "24 Temmuz 2026",
+    v2Title: "🚀 VibeConnect v2.0.0 — Küresel i18n & Güvenlik Güncellemesi",
+    v2_feat1: "🌐 Küresel i18n Dil Desteği: Sitenin tüm sayfaları, modalları ve backend hata kodları (ErrorCodes) için Türkçe ve İngilizce dil seçeneği eklendi.",
+    v2_feat2: "🔒 URL Güvenlik Guard: Yetkisiz sohbet linklerine erişim engellendi. Yetkisiz girişlerde kullanıcı anında Ana Sayfaya yönlendiriliyor.",
+    v2_feat3: "✍️ Karakter Limiti & Biyografi: Mesajlara 255 karakter sınırı ve canlı sayacı getirildi; profillere özelleştirilebilir bio alanı eklendi.",
+    v2_feat4: "🟢 Gerçek Zamanlı Çevrimiçi Statüsü: DM listesinde ve kullanıcı pop-up profillerinde canlı online/offline durumu gösterimi sağlandı.",
+    
+    date2: "22 Temmuz 2026",
+    v1_5Title: "📷 Medya Mesajları & Cloudinary Temizliği",
+    v1_5_feat1: "🖼️ Sohbet İçi Medya Gönderimi: Sohbet odalarında direkt görsel ve video yükleme ve önizleme desteği getirildi.",
+    v1_5_feat2: "🧹 Otomatik Bulut Temizliği: Silinen profil/grup avatarlarının Cloudinary üzerinden otomatik destroy edilmesi sağlandı.",
+    v1_5_feat3: "👥 Grup İçi Rol & Katılımcı Yönetimi: Grup detayları zenginleştirildi, gruptan ayrılma ve kurucu yetki kuralları entegre edildi.",
+
+    date3: "19 Temmuz 2026",
+    v1_0Title: "⚡ VibeConnect v1.0 — Bento Grid & Kategori Odaları",
+    v1_0_feat1: "🎮 Kategori Bazlı Odalar: Yazılım, Oyun, Müzik, Sinema, Spor vb. 12 farklı kategori alanı ve özel bento grid tasarımı sunuldu.",
+    v1_0_feat2: "💬 Discord-Style Çift Bölmeli Sohbet: Odalar, DM'ler ve Gruplar arasında kesintisiz gerçek zamanlı Socket.io mesajlaşması bağlandı.",
+  },
+
   // Auth Pages
   auth: {
     loginTitle: "Hesabınıza Giriş Yapın",
