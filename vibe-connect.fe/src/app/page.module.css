@@ -14,25 +14,28 @@
   left: 0;
   right: 0;
   height: 72px;
-  background: rgba(19, 19, 19, 0.75);
+  background: rgba(19, 19, 19, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--color-border-subtle);
   z-index: 100;
+  display: flex;
+  align-items: center;
 }
 
 .navContent {
+  width: 100%;
   max-width: 1280px;
   margin: 0 auto;
   height: 100%;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 32px;
 }
 
 .brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 10px;
   font-weight: 700;
@@ -40,27 +43,36 @@
   color: #ffffff;
   letter-spacing: -0.01em;
   text-decoration: none;
+  line-height: 1;
+  justify-self: start;
 }
 
 .brandLogoImg {
   object-fit: contain;
   border-radius: 8px;
   filter: drop-shadow(0 2px 8px rgba(41, 121, 255, 0.4));
+  display: block;
 }
 
 .navLinks {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 12px;
+  justify-self: center;
 }
 
 .navLink {
   color: var(--color-on-surface-variant);
   font-size: 14px;
   font-weight: 500;
-  padding: 8px 14px;
+  padding: 8px 16px;
   border-radius: var(--radius-default);
   transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  text-decoration: none;
 }
 
 .navLink:hover {
@@ -71,7 +83,8 @@
 .navActions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: flex-end;
+  gap: 14px;
 }
 
 .loginBtn {
@@ -80,10 +93,14 @@
   color: var(--color-on-surface-variant);
   font-size: 14px;
   font-weight: 500;
-  padding: 8px 16px;
+  padding: 10px 18px;
   border-radius: var(--radius-default);
   cursor: pointer;
   transition: color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  text-decoration: none;
 }
 
 .loginBtn:hover {
@@ -95,12 +112,16 @@
   color: #001945;
   font-size: 14px;
   font-weight: 600;
-  padding: 9px 20px;
+  padding: 10px 22px;
   border-radius: var(--radius-default);
   border: none;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(41, 121, 255, 0.25);
   transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  text-decoration: none;
 }
 
 .getStartedBtn:hover {
@@ -143,20 +164,49 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(41, 121, 255, 0.1);
-  border: 1px solid rgba(41, 121, 255, 0.25);
-  color: var(--color-primary-fixed);
-  font-size: 12px;
-  font-weight: 500;
-  padding: 6px 14px;
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  color: #d8b4fe;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 18px;
   border-radius: var(--radius-full);
   margin-bottom: 24px;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+  animation: badgePulse 2.5s infinite ease-in-out;
+}
+
+@keyframes badgePulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4);
+    border-color: rgba(168, 85, 247, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 20px 4px rgba(168, 85, 247, 0.6);
+    border-color: rgba(192, 132, 252, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0);
+    border-color: rgba(168, 85, 247, 0.35);
+  }
 }
 
 .badgeSpark {
-  color: var(--color-primary);
+  color: #c084fc;
   display: flex;
   align-items: center;
+  animation: sparkPulse 1.5s infinite alternate;
+}
+
+@keyframes sparkPulse {
+  from {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(1.2);
+    opacity: 1;
+  }
 }
 
 .heroTitle {
@@ -522,28 +572,35 @@
 .footer {
   background: #0e0e0e;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 40px 24px;
+  padding: 48px 32px;
 }
 
 .footerContent {
+  width: 100%;
   max-width: 1280px;
   margin: 0 auto;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
   gap: 24px;
 }
 
 .footerLinks {
   display: flex;
-  gap: 24px;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  justify-self: center;
 }
 
 .footerLink {
   color: var(--color-on-surface-variant);
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 500;
   transition: color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
 }
 
 .footerLink:hover {
@@ -553,6 +610,11 @@
 .copyright {
   color: var(--color-outline);
   font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  line-height: 1;
+  justify-self: end;
 }
 
 /* Mobile Responsiveness */

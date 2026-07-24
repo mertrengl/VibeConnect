@@ -34,7 +34,7 @@ export const trTranslations = {
     updates: "Güncellemeler",
     logIn: "Giriş Yap",
     getStarted: "Kayıt Ol",
-    versionBadge: "VibeConnect v2.0 yayında",
+    versionBadge: "✨ SONUNDA: Gerçek İletişim Sizinle",
     heroTitleLine1: "Kabuğundan Çık. İnsanlarını Bul.",
     heroTitleHighlight: "Aynı Enerjiyi Paylaştığın Topluluklarla Anında Bağlan.",
     heroSubtitle: "Tanıdığın insanlarla sınırlı kalma. İlgi alanlarına göre oluşturulmuş odalara katıl, senin gibi düşünen insanlarla tanış ve gerçek sohbetin enerjisini yakala.",
@@ -71,11 +71,45 @@ export const trTranslations = {
     copyright: "© 2026 VibeConnect Inc. Tüm hakları saklıdır.",
   },
 
+  // Legal & Info Pages (Privacy, Terms, Cookies, Security)
+  legal: {
+    backToHome: "Ana Sayfaya Dön",
+
+    // Privacy Policy
+    privacyTitle: "Gizlilik Politikası",
+    privacySub: "Kişisel verilerinizin korunması ve işlenmesi hakkındaki taahhütlerimiz.",
+    privacyDate: "Son Güncelleme: 24 Temmuz 2026",
+    privacyContent1: "VibeConnect olarak gizliliğinize en yüksek değeri veriyoruz. Platformumuzu kullanırken ürettiğiniz mesajlar, oturum verileri ve kişisel bilgileriniz uçtan uca koruma altında tutulmaktadır.",
+    privacyContent2: "Kullanıcı verileriniz hiçbir üçüncü taraf pazarlama şirketi veya reklam ağı ile satılmaz ya da paylaşılmaz. Hesabınızı dilediğiniz an silebilir ve tüm verilerinizin bulut sunucularımızdan tamamen kaldırılmasını talep edebilirsiniz.",
+
+    // Terms of Service
+    termsTitle: "Kullanım Şartları",
+    termsSub: "VibeConnect topluluk kuralları ve platform kullanım esasları.",
+    termsDate: "Son Güncelleme: 24 Temmuz 2026",
+    termsContent1: "VibeConnect, saygılı ve samimi topluluk ilişkilerini teşvik eder. Platform üzerinde nefret söylemi, taciz, yasa dışı içerik paylaşımı ve spam faaliyetleri kesinlikle yasaktır.",
+    termsContent2: "Kurallara uymayan hesaplar platform yönetimi tarafından kısıtlanabilir veya kapatılabilir. VibeConnect hizmetlerini kullanarak bu kullanım esaslarını kabul etmiş sayılırsınız.",
+
+    // Cookie Policy
+    cookiesTitle: "Çerez Politikası",
+    cookiesSub: "Web sitemizde kullanılan çerezler ve yerel depolama teknolojileri.",
+    cookiesDate: "Son Güncelleme: 24 Temmuz 2026",
+    cookiesContent1: "VibeConnect, yalnızca oturumunuzu açık tutmak (oturum token'ı) ve dil tercihinizi (TR/EN) cihazınızda hatırlamak amacıyla temel düzeyde yerel depolama (localStorage/sessionStorage) kullanır.",
+    cookiesContent2: "Sitemizde kullanıcı hareketlerini izleyen veya hedefli reklam gösterimi yapan üçüncü taraf izleme çerezleri kesinlikle yer almamaktadır.",
+
+    // Security
+    securityTitle: "Güvenlik & Koruma",
+    securitySub: "Veri güvenliği, yetkilendirme ve bağlantı koruma standartlarımız.",
+    securityDate: "Son Güncelleme: 24 Temmuz 2026",
+    securityContent1: "Sistemimiz JWT tabanlı güvenli oturum kimlik doğrulaması ve şifrelenmiş parola algoritmaları kullanır. Yetkisiz sohbet bağlantıları ve URL müdahaleleri otomatik güvenlik korumaları ile engellenir.",
+    securityContent2: "Tüm canlı Socket.io mesajlaşma trafiği ve bulut depolama nesneleri anlık yetki denetimlerinden geçer ve yetkisiz erişimlere karşı izole edilir.",
+  },
+
   // News / Release Notes Page
   news: {
     title: "Güncelleme Notları & Sürüm Haberleri",
     subtitle: "VibeConnect'e eklenen son 1 haftalık tüm özellikler, güvenlik güncellemeleri ve sistem iyileştirmeleri.",
     backToHome: "Ana Sayfaya Dön",
+    releaseBadge: "GÜNCELLEME NOTLARI & SÜRÜMLER",
     latestBadge: "EN YENİ SÜRÜM",
     date1: "24 Temmuz 2026",
     v2Title: "🚀 VibeConnect v2.0.0 — Çoklu Dil & Güvenlik Güncellemesi",

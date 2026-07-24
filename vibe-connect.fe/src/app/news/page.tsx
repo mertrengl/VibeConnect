@@ -34,7 +34,7 @@ export default function NewsPage() {
         <header className={styles.header}>
           <div className={styles.badge}>
             <span className={styles.badgeSpark}>⚡</span>
-            <span>RELEASE LOGS & UPDATES</span>
+            <span>{t("news.releaseBadge")}</span>
           </div>
           <h1 className={styles.title}>{t("news.title")}</h1>
           <p className={styles.subtitle}>{t("news.subtitle")}</p>

@@ -36,7 +36,7 @@ export const enTranslations: TranslationKeys = {
     updates: "Release Notes",
     logIn: "Log In",
     getStarted: "Get Started",
-    versionBadge: "VibeConnect v2.0 is live",
+    versionBadge: "✨ FINALLY: Real Connection Is Here",
     heroTitleLine1: "Break Out of Your Shell. Find Your People.",
     heroTitleHighlight: "Connect Instantly with Communities That Share Your Vibe.",
     heroSubtitle: "Go beyond the people you already know. Join rooms built around your interests, meet people who think like you, and find the energy of real conversation.",
@@ -73,11 +73,45 @@ export const enTranslations: TranslationKeys = {
     copyright: "© 2026 VibeConnect Inc. All rights reserved.",
   },
 
+  // Legal & Info Pages (Privacy, Terms, Cookies, Security)
+  legal: {
+    backToHome: "Back to Home",
+
+    // Privacy Policy
+    privacyTitle: "Privacy Policy",
+    privacySub: "Our commitments regarding the protection and handling of your personal data.",
+    privacyDate: "Last Updated: July 24, 2026",
+    privacyContent1: "At VibeConnect, we prioritize your privacy above all else. All messages, session tokens, and personal data generated while using our platform are strictly protected.",
+    privacyContent2: "Your user data is never sold or shared with third-party marketing companies or ad networks. You can delete your account at any time and request complete removal of your data.",
+
+    // Terms of Service
+    termsTitle: "Terms of Service",
+    termsSub: "Community guidelines and platform usage principles for VibeConnect.",
+    termsDate: "Last Updated: July 24, 2026",
+    termsContent1: "VibeConnect fosters a respectful and welcoming environment. Hate speech, harassment, illegal content sharing, and spam are strictly prohibited.",
+    termsContent2: "Accounts violating these rules may be suspended or permanently terminated. By using VibeConnect services, you agree to comply with these terms.",
+
+    // Cookie Policy
+    cookiesTitle: "Cookie Policy",
+    cookiesSub: "Understanding how cookies and local storage are used on our website.",
+    cookiesDate: "Last Updated: July 24, 2026",
+    cookiesContent1: "VibeConnect only uses essential local storage (localStorage/sessionStorage) to maintain your active session token and remember your language preference (TR/EN).",
+    cookiesContent2: "We do not use third-party tracking cookies or advertising scripts that monitor your browsing behavior across the web.",
+
+    // Security
+    securityTitle: "Security & Protection",
+    securitySub: "Our data security, authentication, and connection guard standards.",
+    securityDate: "Last Updated: July 24, 2026",
+    securityContent1: "Our infrastructure employs secure JWT authentication and encrypted credential hashing. Unauthorized conversation links and URL tampering are automatically blocked.",
+    securityContent2: "All real-time messaging traffic and cloud storage assets undergo continuous authorization checks and remain isolated from unauthorized access.",
+  },
+
   // News / Release Notes Page
   news: {
     title: "Release Notes & Product News",
     subtitle: "All features, security updates, and system improvements shipped to VibeConnect over the past week.",
     backToHome: "Back to Home",
+    releaseBadge: "RELEASE LOGS & UPDATES",
     latestBadge: "LATEST RELEASE",
     date1: "July 24, 2026",
     v2Title: "🚀 VibeConnect v2.0.0 — Multi-Language & Security Release",

@@ -299,10 +299,10 @@ export default function Home() {
           </Link>
 
           <div className={styles.footerLinks}>
-            <a href="#" className={styles.footerLink}>{t("landing.privacyPolicy")}</a>
-            <a href="#" className={styles.footerLink}>{t("landing.termsOfService")}</a>
-            <a href="#" className={styles.footerLink}>{t("landing.cookiePolicy")}</a>
-            <a href="#" className={styles.footerLink}>{t("landing.security")}</a>
+            <Link href="/privacy" className={styles.footerLink}>{t("landing.privacyPolicy")}</Link>
+            <Link href="/terms" className={styles.footerLink}>{t("landing.termsOfService")}</Link>
+            <Link href="/cookies" className={styles.footerLink}>{t("landing.cookiePolicy")}</Link>
+            <Link href="/security" className={styles.footerLink}>{t("landing.security")}</Link>
           </div>
 
           <div className={styles.copyright}>
