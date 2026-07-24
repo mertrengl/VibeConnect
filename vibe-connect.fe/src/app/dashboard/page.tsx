@@ -1076,7 +1076,7 @@ function DashboardContent() {
     localStorage.removeItem("vibe_remember_me");
     sessionStorage.removeItem("vibe_token");
     sessionStorage.removeItem("vibe_user");
-    router.push("/login");
+    router.push("/");
   };
 
   // Close profile menu when clicking outside
