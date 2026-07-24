@@ -838,20 +838,9 @@
   align-items: center;
   gap: var(--space-sm);
   margin-bottom: var(--space-lg);
-  overflow-x: auto;
-  padding: 12px 6px;
-  min-height: 60px;
-  scrollbar-width: thin;
+  padding: 4px 0;
   box-sizing: border-box;
-}
-
-.categoryBar::-webkit-scrollbar {
-  height: 4px;
-}
-
-.categoryBar::-webkit-scrollbar-thumb {
-  background: var(--color-border-subtle);
-  border-radius: 4px;
+  flex-wrap: wrap;
 }
 
 .categoryChip {
