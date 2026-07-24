@@ -1913,7 +1913,11 @@ function DashboardContent() {
                               )}
                             </button>
 
-                            <div className={styles.messageBubbleContainer} style={{ position: "relative" }}>
+                            <div
+                              className={styles.messageBubbleContainer}
+                              onMouseEnter={() => setActiveReactionMsgId(msg.id)}
+                              onMouseLeave={() => setActiveReactionMsgId(null)}
+                            >
                               {/* Quick Reaction Popover */}
                               {isPopoverOpen && (
                                 <div className={`${styles.reactionPickerPopover} ${isMe ? styles.reactionPickerSelf : styles.reactionPickerOther}`}>
@@ -1930,8 +1934,6 @@ function DashboardContent() {
                               )}
 
                               <div
-                                onMouseEnter={() => setActiveReactionMsgId(msg.id)}
-                                onMouseLeave={() => setActiveReactionMsgId(null)}
                                 style={{
                                   background: isMe ? "linear-gradient(135deg, #a855f7, #6366f1)" : "rgba(255,255,255,0.08)",
                                   color: "#fff",

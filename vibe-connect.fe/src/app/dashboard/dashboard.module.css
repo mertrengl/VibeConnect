@@ -2031,15 +2031,15 @@
   }
 }
 
-/* Reactions Bar & Quick Emoji Picker */
 .messageBubbleContainer {
   position: relative;
-  maxWidth: 65%;
+  max-width: 70%;
+  width: fit-content;
 }
 
 .reactionPickerPopover {
   position: absolute;
-  top: -38px;
+  top: -42px;
   background: var(--bg-surface-popover, #252525);
   border: 1px solid var(--color-border-subtle);
   border-radius: 20px;
@@ -2048,8 +2048,18 @@
   align-items: center;
   gap: 4px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-  z-index: 10;
+  z-index: 20;
   animation: popIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reactionPickerPopover::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: transparent;
 }
 
 .reactionPickerSelf {
